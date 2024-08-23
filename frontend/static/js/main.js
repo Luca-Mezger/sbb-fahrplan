@@ -9,21 +9,21 @@ document.addEventListener('DOMContentLoaded', function () {
     let names = [];
     let filteredNames = [];
 
-    // Fetch the list of names from the backend
+    // fetch list of names from backend
     fetch('/api/names')
         .then(response => response.json())
         .then(data => {
             names = data;
         });
 
-    // Filter names based on the search query
+    // filter for names (search)
     searchField.addEventListener('input', function () {
         const query = searchField.value.toLowerCase();
         filteredNames = names.filter(name => name.toLowerCase().includes(query));
         displaySuggestions();
     });
 
-    // Display the filtered suggestions in the dropdown
+    // display dropdown
     function displaySuggestions() {
         suggestionsList.innerHTML = '';
         if (filteredNames.length > 0) {
@@ -39,14 +39,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Handle the search button click
+    // search button
     searchButton.addEventListener('click', function () {
         const query = searchField.value.toLowerCase();
         const results = names.filter(name => name.toLowerCase().includes(query));
         displayResults(query, results);
     });
 
-    // Display the search results
+    // display search results
     function displayResults(query, results) {
         searchResults.innerHTML = `<h2>Search Results for "${query}"</h2>`;
         if (results.length === 0) {
