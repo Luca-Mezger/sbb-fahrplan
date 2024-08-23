@@ -4,18 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Station</title>
+    <title>Bahnhof Suche</title>
+    <!-- Link to the noUiSlider CSS via CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div id="search-container">
-        <input type="text" id="search-field" placeholder="Search for a station..." autocomplete="off">
-        <button id="search-button">Search</button>
-        <ul id="suggestions" class="suggestions-dropdown"></ul>
-    </div>
-    
-    <div id="search-results" class="search-results"></div>
+    <header>
+        <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="Logo" class="logo">
+    </header>
 
+    <div class="content">
+        <div id="search-container">
+            <div class="search-box">
+                <div class="search-bar-container">
+                    <input type="text" id="bahnhof-suche" placeholder="Bahnhof Suche" autocomplete="off">
+                    <button id="search-button">Suchen</button>
+                    <ul id="suggestions" class="suggestions-dropdown"></ul>
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-labels">
+                        <span>Min</span>
+                        <span>Max</span>
+                    </div>
+                    <div id="range-slider"></div>
+                </div>
+
+                <div class="buttons-container">
+                    <button class="action-button">Morgen</button>
+                    <button class="action-button">Mittag</button>
+                    <button class="action-button">Abend</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the noUiSlider JS via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
