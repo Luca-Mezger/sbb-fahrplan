@@ -15,6 +15,11 @@ def bhfs():
     bhfs_list = data.get_bhfs()
     return bhfs_list
 
+@app.route("/agency")
+def agency():
+    agency_list = data.get_agency()
+    return agency_list
+
 if __name__ == "__main__":
    # data = Data()
     app.run(debug= True)
