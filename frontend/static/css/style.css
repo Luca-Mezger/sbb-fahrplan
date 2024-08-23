@@ -122,6 +122,24 @@ header .language-flag img {
     font-size: 14px;
 }
 
+.slider-display-container {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #EB0000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slider-display-container .separator {
+    margin: 0 10px;
+    font-size: 28px;
+    color: #333;
+}
+
+
 .noUi-connect{
     background: #EB0000;
 }

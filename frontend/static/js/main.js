@@ -1,5 +1,3 @@
-// frontend/static/js/main.js
-
 document.addEventListener('DOMContentLoaded', function () {
     const bahnhofSuche = document.getElementById('bahnhof-suche');
     const searchButton = document.getElementById('search-button');
@@ -44,20 +42,49 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Searching for: ' + query);
         // Implement search functionality here if needed
     });
-});
 
-
-document.addEventListener('DOMContentLoaded', function () {
+    // Initialize the slider
     var slider = document.getElementById('range-slider');
+    var startTimeDisplay = document.getElementById('start-time-display');
+    var endTimeDisplay = document.getElementById('end-time-display');
 
     noUiSlider.create(slider, {
-        start: [20, 80], // Initial values for the two handles
-        connect: true, // The bar will connect the handles
+        start: [0, 12], // Initial values for the two handles (00:00 to 12:00)
+        connect: true, 
+        step: 1, 
         range: {
             'min': 0,
-            'max': 100
+            'max': 23 
+        },
+        format: {
+            to: function(value) {
+                return ('0' + Math.floor(value)).slice(-2) + ":00";
+            },
+            from: function(value) {
+                return Number(value.replace(":00", ""));
+            }
         }
     });
 
-    // You can add event listeners here if you need to handle changes to the slider values
+    // Update display when slider values change
+    slider.noUiSlider.on('update', function(values, handle) {
+        if (handle === 0) {
+            startTimeDisplay.textContent = values[0];
+        } else {
+            endTimeDisplay.textContent = values[1];
+        }
+    });
+
+    // Button click event listeners
+    document.getElementById('morning-button').addEventListener('click', function() {
+        slider.noUiSlider.set([0, 12]); // Set slider to 00:00 - 12:00
+    });
+
+    document.getElementById('midday-button').addEventListener('click', function() {
+        slider.noUiSlider.set([10, 15]); // Set slider to 10:00 - 15:00
+    });
+
+    document.getElementById('evening-button').addEventListener('click', function() {
+        slider.noUiSlider.set([16, 23]); // Set slider to 16:00 - 23:00
+    });
 });
