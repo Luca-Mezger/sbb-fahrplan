@@ -26,10 +26,5 @@ def agency():
 def search():
     return "Search results for bhf"
 
-@app.route("/agency")
-def agency():
-    agency_list = data.get_agency()
-    return agency_list
-
 if __name__ == "__main__":
     app.run(debug=True)
