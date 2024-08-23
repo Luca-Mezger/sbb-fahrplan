@@ -2,8 +2,8 @@ import sqlite3 as sq
 
 class Data():
 
-    OLD_PATH = "data/hrdf_2024-01-03.sqlite"
-    NEW_PATH = "data/hrdf_2024-02-21.sqlite"
+    OLD_PATH = "../data/hrdf_2024-01-03.sqlite"
+    NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
 
     def __init__(self,):
         pass
