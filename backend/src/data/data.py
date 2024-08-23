@@ -25,7 +25,8 @@ class Data():
         """
 
         querry = f"""
-SELECT fplan.fplan_trip_id, 
+SELECT
+group_concat(fplan_stop_times.fplan_trip_bitfeld_id) AS trip_bitfield_id,
 group_concat(fplan_stop_times.stop_arrival) AS stop_arrs
 
 FROM fplan, fplan_trip_bitfeld, calendar, fplan_stop_times WHERE
@@ -46,11 +47,19 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
         old_arr_dict = {el[0]: el[1] for el in old_arr_times if el[1] != ""}
         new_arr_dict = {el[0]: el[1] for el in new_arr_times if el[1] != ""}
 
+        return_list = []
+
         for trip in old_arr_dict.keys():
             if not trip in new_arr_dict:
                 continue
             if old_arr_dict[trip]  != new_arr_dict[trip]:
-                print(trip)
+                old_time = old_arr_dict[trip]
+                new_time = new_arr_dict[trip]
+
+                return_list.append((f"{old_time[:2]}:{old_time[2:]}",
+                                    f"{new_time[:2]}:{new_time[2:]}"))
+
+        return return_list
 
 
     def __get_data_old(self, statment):
