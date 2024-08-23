@@ -6,9 +6,7 @@ class Data():
     NEW_PATH = "data/hrdf_2024-02-21.sqlite"
 
     def __init__(self,):
-        self.old_db = 
-        self.new_db = sq.connect(self.NEW_PATH)
-
+        pass
 
     def get_bhfs(self,):
         """Return a list of all agencies with sublist: (id, name)
@@ -64,7 +62,7 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
     def __get_data_new(self, statment):
         db = sq.connect(self.NEW_PATH)
-        cur = self.db.cursor()
+        cur = db.cursor()
 
         cur.execute(statment)
         return cur.fetchall()
