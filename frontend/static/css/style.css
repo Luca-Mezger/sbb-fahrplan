@@ -1,32 +1,36 @@
-/* frontend/static/css/style.css */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     background-color: #f4f4f4;
     color: #333;
-    overflow: hidden; /* Prevent scrolling */
     height: 100vh; /* Ensure body takes full screen height */
+    display: flex;
+    flex-direction: column;
 }
 
 header {
     background-color: #EB0000;
-    padding: 20px 20px;
+    padding: 20px;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between; /* Space between logo and flag */
 }
 
 header .logo {
     height: 32px;
 }
 
+header .language-flag img {
+    height: 24px;
+    cursor: pointer;
+}
+
 .content {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 70px); /* Adjusting for the header height */
     padding: 20px;
-    flex-direction: column;
     background-color: white;
 }
 
@@ -142,4 +146,13 @@ header .logo {
 
 .action-button:hover {
     background-color: #555;
+}
+
+footer {
+    background-color: #EB0000;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    width: 100%;
+    font-size: 14px;
 }

@@ -1,4 +1,3 @@
-<!-- frontend/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +11,16 @@
 <body>
     <header>
         <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="Logo" class="logo">
+        <div class="language-flag">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg" aria-labelledby="languageIconTitle" stroke="#FFFFFF" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter" fill="none" color="#FFFFFF">
+                <title id="languageIconTitle">Language</title>
+                <circle cx="12" cy="12" r="10" />
+                <path stroke-linecap="round" d="M12,22 C14.6666667,19.5757576 16,16.2424242 16,12 C16,7.75757576 14.6666667,4.42424242 12,2 C9.33333333,4.42424242 8,7.75757576 8,12 C8,16.2424242 9.33333333,19.5757576 12,22 Z" />
+                <path stroke-linecap="round" d="M2.5 9L21.5 9M2.5 15L21.5 15" />
+            </svg>
+        </div>
     </header>
+    
 
     <div class="content">
         <div id="search-container">
@@ -25,8 +33,8 @@
 
                 <div class="slider-container">
                     <div class="slider-labels">
-                        <span>Min</span>
-                        <span>Max</span>
+                        <span>00:00</span>
+                        <span>23:59</span>
                     </div>
                     <div id="range-slider"></div>
                 </div>
@@ -39,6 +47,10 @@
             </div>
         </div>
     </div>
+
+    <footer>
+        <p>&copy; 2024 TrainHackers. All rights reserved.</p>
+    </footer>
 
     <!-- Include the noUiSlider JS via CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
