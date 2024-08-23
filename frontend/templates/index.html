@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bahnhof Suche</title>
+    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.png') }}" type="image/image/png">
+
+    <!--noUiSlider css via cdn -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="Logo" class="logo">
+        <div class="language-flag">
+            <svg width="24px" height="24px" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg" aria-labelledby="languageIconTitle" stroke="#FFFFFF" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter" fill="none" color="#FFFFFF">
+                <title id="languageIconTitle">Language</title>
+                <circle cx="12" cy="12" r="10" />
+                <path stroke-linecap="round" d="M12,22 C14.6666667,19.5757576 16,16.2424242 16,12 C16,7.75757576 14.6666667,4.42424242 12,2 C9.33333333,4.42424242 8,7.75757576 8,12 C8,16.2424242 9.33333333,19.5757576 12,22 Z" />
+                <path stroke-linecap="round" d="M2.5 9L21.5 9M2.5 15L21.5 15" />
+            </svg>
+        </div>
+    </header>
+    
+
+    <div class="content">
+        <div id="search-container">
+            <div class="search-box">
+                <div class="search-bar-container">
+                    <input type="text" id="bahnhof-suche" placeholder="Bahnhof Suche" autocomplete="off">
+                    <button id="search-button">Suchen</button>
+                    <ul id="suggestions" class="suggestions-dropdown"></ul>
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-labels">
+                        <span>00:00</span>
+                        <span>23:59</span>
+                    </div>
+                    <div id="range-slider"></div>
+                </div>
+
+                <div class="slider-display-container">
+                    <span id="start-time-display">00:00</span>
+                    <span class="separator">-</span>
+                    <span id="end-time-display">00:00</span>
+                </div>
+                
+
+                <div class="buttons-container">
+                    <div class="buttons-container">
+                        <button id="morning-button" class="action-button">Morgen</button>
+                        <button id="midday-button" class="action-button">Mittag</button>
+                        <button id="evening-button" class="action-button">Abend</button>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 TrainHackers. All rights reserved.</p>
+    </footer>
+
+    <!-- Include the noUiSlider JS via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
