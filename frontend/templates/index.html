@@ -1,0 +1,21 @@
+<!-- frontend/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Station</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div id="search-container">
+        <input type="text" id="search-field" placeholder="Search for a station..." autocomplete="off">
+        <button id="search-button">Search</button>
+        <ul id="suggestions" class="suggestions-dropdown"></ul>
+    </div>
+    
+    <div id="search-results" class="search-results"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
