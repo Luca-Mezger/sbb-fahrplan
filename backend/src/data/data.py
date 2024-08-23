@@ -14,7 +14,7 @@ class Data():
         """Return a list of all agencies with sublist: (id, name)
         """
 
-        return self.__get_data_old("SELECT stop_id, stop_name from stops")
+        return self.__get_data_old("SELECT stop_id, stop_name from stops where instr(stop_name, ',')==0")
 
     def get_agency(self,):
         """Return a list of all agencies with sublist: (id, name, short_name)
@@ -28,6 +28,12 @@ class Data():
 
     def __get_data_old(self, statment):
         cur = self.old_db.cursor()
+
+        cur.execute(statment)
+        return cur.fetchall()
+
+    def __get_data_new(self, statment):
+        cur = self.new_db.cursor()
 
         cur.execute(statment)
         return cur.fetchall()
