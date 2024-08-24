@@ -31,7 +31,7 @@ def agency():
 # Define a route to get a list of new path to db
 @app.route("/new_db/14-08-2024")
 def new():
-    db_new = data.get_old_date()
+    db_new = data.get_new_date()
     return "03-01-2024"
 
 # Define a route to get a list of old path to db
