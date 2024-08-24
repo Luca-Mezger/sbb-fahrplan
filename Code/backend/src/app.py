@@ -46,8 +46,6 @@ def old():
 @app.route("/bhfs/<date>/<id>")
 def dateId(date, id):
     dateId_list = data.get_time_diffs_bhf(id, date)
-    print("hi", file=sys.stderr) 
-    print(dateId_list, file=sys.stderr) 
     return dateId_list
 
 # Run the Flask application in debug mode
