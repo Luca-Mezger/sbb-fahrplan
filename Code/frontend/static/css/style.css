@@ -209,9 +209,10 @@ header .language-flag img {
     padding: 15px;
     font-size: 16px;
     color: #333;
-    display: flex;
-    align-items: center; /* Align items horizontally */
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto 1fr; /* Define two columns: one for the icon/name, one for the times */
+    grid-gap: 10px; /* Space between the icon/name and times */
+    align-items: center; /* Align items vertically centered */
 }
 
 .results-table td img {
@@ -227,19 +228,31 @@ header .language-flag img {
     color: #EB0000; /* Train name color */
 }
 
-.train-details {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-}
-
 .train-times {
     color: #555; /* Time color */
     font-size: 14px;
     display: flex;
     flex-direction: column; /* Stack the times vertically */
+    align-items: flex-start; /* Align text to the left */
 }
+
+.train-times div {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.train-times div::before {
+    content: attr(data-label);
+    flex: 1 0 150px; /* Adjust this width to align the text properly */
+    text-align: left;
+    padding-right: 10px; /* Space between the label and the time */
+}
+
+.train-times .time {
+    flex-shrink: 0;
+}
+
 
 .results-table tr:hover {
     background-color: #f1f1f1;
