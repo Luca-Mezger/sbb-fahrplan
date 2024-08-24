@@ -55,6 +55,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Filter station names based on search query
     bahnhofSuche.addEventListener('input', function () {
+        function nameSorter(a, b) {
+            queryLength = query.length;
+
+            a = a.name;
+            b = b.name;
+
+            if ((a.toLowerCase().substring(0, queryLength) == query) &&
+                (b.toLowerCase().substring(0, queryLength) == query)) {
+                return a.localeCompare(b);
+            }
+            else if ((a.toLowerCase().substring(0, queryLength) == query) &&
+                     (b.toLowerCase().substring(0, queryLength) != query)) {
+                return -1;
+            }
+            else if ((a.toLowerCase().substring(0, queryLength) != query) &&
+                     (b.toLowerCase().substring(0, queryLength) == query)) {
+                return 1;
+            }
+            else if ((a.toLowerCase().substring(0, queryLength) != query) &&
+                     (b.toLowerCase().substring(0, queryLength) != query)) {
+                return a.localeCompare(b);
+            }
+        }
+
         const query = bahnhofSuche.value.toLowerCase();
 
         if (query.trim() === '') {
@@ -63,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         filteredNames = stations.filter(station => station.name.toLowerCase().includes(query));
+        filteredNames.sort(nameSorter);
         displaySuggestions();
     });
 
@@ -88,6 +113,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Filter transportunternehmen based on search query
     transportunternehmenSuche.addEventListener('input', function () {
+        function nameSorter(a, b) {
+            queryLength = query.length;
+
+            a = a.displayName;
+            b = b.displayName;
+
+            if ((a.toLowerCase().substring(0, queryLength) == query) &&
+                (b.toLowerCase().substring(0, queryLength) == query)) {
+                return a.localeCompare(b);
+            }
+            else if ((a.toLowerCase().substring(0, queryLength) == query) &&
+                     (b.toLowerCase().substring(0, queryLength) != query)) {
+                return -1;
+            }
+            else if ((a.toLowerCase().substring(0, queryLength) != query) &&
+                     (b.toLowerCase().substring(0, queryLength) == query)) {
+                return 1;
+            }
+            else if ((a.toLowerCase().substring(0, queryLength) != query) &&
+                     (b.toLowerCase().substring(0, queryLength) != query)) {
+                return a.localeCompare(b);
+            }
+        }
+
         const query = transportunternehmenSuche.value.toLowerCase();
 
         if (query.trim() === '') {
@@ -98,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const filteredTransportunternehmen = transportunternehmen.filter(company =>
             company.displayName.toLowerCase().includes(query)
         );
+        filteredTransportunternehmen.sort(nameSorter);
         displayTransportunternehmenSuggestions(filteredTransportunternehmen);
     });
 
