@@ -116,25 +116,24 @@ document.addEventListener('DOMContentLoaded', function () {
             trainInfo.appendChild(trainIcon);
             trainInfo.appendChild(trainName);
     
-            const trainDetails = document.createElement('div');
-            trainDetails.classList.add('train-details');
-    
             const trainTimes = document.createElement('div');
             trainTimes.classList.add('train-times');
     
             const arrivalWithout = document.createElement('div');
-            arrivalWithout.textContent = `Ankunft ohne Baustelle: ${item[0]}`;
+            arrivalWithout.setAttribute('data-label', 'Ankunft ohne Baustelle:');
+            arrivalWithout.classList.add('time');
+            arrivalWithout.textContent = item[0];
     
             const arrivalWith = document.createElement('div');
-            arrivalWith.textContent = `Ankunft mit Baustelle: ${item[1]}`;
+            arrivalWith.setAttribute('data-label', 'Ankunft mit Baustelle:');
+            arrivalWith.classList.add('time');
+            arrivalWith.textContent = item[1];
     
             trainTimes.appendChild(arrivalWithout);
             trainTimes.appendChild(arrivalWith);
     
-            trainDetails.appendChild(trainInfo);
-            trainDetails.appendChild(trainTimes);
-    
-            timeCell.appendChild(trainDetails);
+            timeCell.appendChild(trainInfo);
+            timeCell.appendChild(trainTimes);
             row.appendChild(timeCell);
     
             table.appendChild(row);
@@ -142,6 +141,8 @@ document.addEventListener('DOMContentLoaded', function () {
     
         resultsContainer.appendChild(table);
     }
+    
+    
     
     
     
