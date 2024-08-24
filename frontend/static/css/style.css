@@ -83,7 +83,7 @@ header .language-flag img {
     list-style: none;
     padding: 0;
     margin: 0;
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;*/
     max-height: 150px;
     overflow-y: auto;
     background-color: white;
