@@ -252,13 +252,13 @@ document.addEventListener('DOMContentLoaded', function () {
             trainTimes.classList.add('train-times');
     
             const arrivalWithout = document.createElement('div');
-            arrivalWithout.setAttribute('data-label', 'Neu:');
+            arrivalWithout.setAttribute('data-label', 'Alt:');
             //fetch('http://127.0.0.1:5000/new_db').then(response => response.text()).then(text => arrivalWithout.setAttribute('data-label', `${text}:`));
             arrivalWithout.classList.add('time');
             arrivalWithout.textContent = item[0] || '-';
     
             const arrivalWith = document.createElement('div');
-            arrivalWith.setAttribute('data-label', 'Alt:');
+            arrivalWith.setAttribute('data-label', 'Neu:');
             //fetch('http://127.0.0.1:5000/old_db').then(response => response.text()).then(text => arrivalWith.setAttribute('data-label', `${text}:`));
 
             arrivalWith.classList.add('time');
@@ -423,3 +423,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     resultsContainer.style.display = 'none'; // initially hide results container
 });
+
+
+        // Function to set a single option in a dropdown from a given endpoint
+        function setDropdownOption(endpoint, dropdownId) {
+            fetch(endpoint)
+                .then(response => response.text()) // Expecting a single string response
+                .then(text => {
+                    const dropdown = document.getElementById(dropdownId);
+                    dropdown.innerHTML = ''; // Clear any existing options
+                    const option = document.createElement('option');
+                    option.value = text; // Set the option value to the fetched string
+                    option.textContent = text; // Use the fetched string as the option label
+                    dropdown.appendChild(option);
+                })
+                .catch(error => console.error('Error fetching dropdown data:', error));
+        }
+
+        // Get the base URL dynamically
+        const baseUrl = window.location.origin;
+
+        // Construct the endpoint URLs dynamically
+        const newDbUrl = `${baseUrl}/new_db`;
+        const oldDbUrl = `${baseUrl}/old_db`;
+
+        // Set the option for the "Neuer Fahrplan" dropdown
+        setDropdownOption(newDbUrl, 'neuer-fahrplan-dropdown');
+
+        // Set the option for the "Alter Fahrplan" dropdown
+        setDropdownOption(oldDbUrl, 'alter-fahrplan-dropdown');
