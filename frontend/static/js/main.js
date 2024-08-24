@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
         if (selectedStation && selectedDate) {
             // Move the search box up slightly by increasing its margin-top
-            searchContainer.style.marginTop = '-15px';
+            searchContainer.style.marginTop = '-50px';
 
             // Ensure results container is visible after search
             resultsContainer.style.display = 'block';
@@ -92,24 +92,59 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayResults(data) {
         // Clear previous results
         resultsContainer.innerHTML = '';
-
+    
         // Create a table to display the results
         const table = document.createElement('table');
         table.classList.add('results-table');
-
+    
         data.forEach(item => {
             const row = document.createElement('tr');
             
             const timeCell = document.createElement('td');
-            const trainInfo = `${item[2]} ${item[3]}`; // Combine train type and number (e.g., RE 5)
-            timeCell.textContent = `${trainInfo}: Ankunft ohne Baustelle: ${item[0]} | Ankunft mit Baustelle: ${item[1]}`;
+            
+            const trainInfo = document.createElement('div');
+            trainInfo.classList.add('train-info');
+    
+            // Train SVG icon (can be replaced with an actual SVG or URL)
+            const trainIcon = document.createElement('img');
+            trainIcon.src = '/static/assets/train-icon.svg'; // Path to your SVG file
+            trainIcon.alt = 'Train Icon';
+    
+            const trainName = document.createElement('span');
+            trainName.textContent = `${item[2]} ${item[3]}`; // Combine train type and number (e.g., RE 5)
+    
+            trainInfo.appendChild(trainIcon);
+            trainInfo.appendChild(trainName);
+    
+            const trainDetails = document.createElement('div');
+            trainDetails.classList.add('train-details');
+    
+            const trainTimes = document.createElement('div');
+            trainTimes.classList.add('train-times');
+    
+            const arrivalWithout = document.createElement('div');
+            arrivalWithout.textContent = `Ankunft ohne Baustelle: ${item[0]}`;
+    
+            const arrivalWith = document.createElement('div');
+            arrivalWith.textContent = `Ankunft mit Baustelle: ${item[1]}`;
+    
+            trainTimes.appendChild(arrivalWithout);
+            trainTimes.appendChild(arrivalWith);
+    
+            trainDetails.appendChild(trainInfo);
+            trainDetails.appendChild(trainTimes);
+    
+            timeCell.appendChild(trainDetails);
             row.appendChild(timeCell);
-
+    
             table.appendChild(row);
         });
-
+    
         resultsContainer.appendChild(table);
     }
+    
+    
+    
 
     function displayNoResults() {
         // Clear previous results
