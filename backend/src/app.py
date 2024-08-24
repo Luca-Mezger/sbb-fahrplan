@@ -1,20 +1,30 @@
-from flask import Flask, request
+from flask import Flask, render_template, jsonify, request
 from data.data import Data
 
-# flask name module
+app = Flask(__name__,
+            template_folder='../../frontend/templates', 
+            static_folder='../../frontend/static')       
+
 data = Data()
-app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "SBB-Fahrplan"
-
+    return render_template('index.html')
 
 @app.route("/bhfs")
 def bhfs():
     bhfs_list = data.get_bhfs()
-    return bhfs_list
+    return jsonify(bhfs_list)  #return as json
+
+@app.route("/agency")
+def agency():
+    agency_list = data.get_agency()
+    return jsonify(agency_list)  
+
+
+@app.route('/search')
+def search():
+    return "Search results for bhf"
 
 if __name__ == "__main__":
-   # data = Data()
-    app.run(debug= True)
+    app.run(debug=True)
