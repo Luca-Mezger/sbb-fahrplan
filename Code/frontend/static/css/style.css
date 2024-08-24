@@ -39,7 +39,7 @@ header .language-flag img {
 
 #search-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 700px;
     text-align: center;
     transition: margin-top 0.5s ease-in-out;
     margin-top: 0;
@@ -226,7 +226,7 @@ header .language-flag img {
     background-color: #f9f9f9;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
+    max-width: 700px;
     width: 100%;
     display: block;
     margin-top: 20px;
@@ -359,13 +359,14 @@ footer {
     width: 100%; /* Full width */
     background-color: #fff;
     padding: 15px;
-    max-width: 570px;
+    max-width: 670px;
     /*border-radius: 8px;*/
     display: none; /* Initially hidden */
     /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
     /*margin-top: 10px;  */
     grid-column: 1 / -1; /* Ensure it spans the full width of the container */
 }
+
 
 .result-item {
     display: flex;

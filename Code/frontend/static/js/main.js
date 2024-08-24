@@ -164,18 +164,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const [startTime, endTime] = slider.noUiSlider.get();
         const start = parseTime(startTime);
         const end = parseTime(endTime);
-
+    
         const filteredResults = allResults.filter(item => {
             const arrivalTime = parseTime(item[0]);
             return arrivalTime >= start && arrivalTime <= end;
         });
-
+    
+        // Sort the filtered results by arrival time (item[0])
+        filteredResults.sort((a, b) => parseTime(a[0]) - parseTime(b[0]));
+    
         if (filteredResults.length === 0) {
             displayNoResults();
         } else {
             displayResults(filteredResults);
         }
     }
+    
     
     
     
@@ -212,6 +216,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
+
+
+    
+    
     function populateResults(data, table) {
         data.forEach(item => {
             const row = document.createElement('tr');
@@ -244,13 +252,13 @@ document.addEventListener('DOMContentLoaded', function () {
             trainTimes.classList.add('train-times');
     
             const arrivalWithout = document.createElement('div');
-            arrivalWithout.setAttribute('data-label', 'Ankunft nach Zeitplan :');
+            arrivalWithout.setAttribute('data-label', 'Neu:');
             //fetch('http://127.0.0.1:5000/new_db').then(response => response.text()).then(text => arrivalWithout.setAttribute('data-label', `${text}:`));
             arrivalWithout.classList.add('time');
             arrivalWithout.textContent = item[0] || '-';
     
             const arrivalWith = document.createElement('div');
-            arrivalWith.setAttribute('data-label', 'Ankunft nach Zeitplan :');
+            arrivalWith.setAttribute('data-label', 'Alt:');
             //fetch('http://127.0.0.1:5000/old_db').then(response => response.text()).then(text => arrivalWith.setAttribute('data-label', `${text}:`));
 
             arrivalWith.classList.add('time');
@@ -346,17 +354,17 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsContainer.appendChild(table);
     }
     
+        
+         
     
     
     
     
     
-    
-
     function displayNoResults() {
         resultsContainer.innerHTML = '';
         const noResultsMessage = document.createElement('p');
-        noResultsMessage.textContent = 'Keine Verspätungen gefunden.';
+        noResultsMessage.textContent = 'Keine Unterbrüche gefunden.';
         resultsContainer.appendChild(noResultsMessage);
     }
 
