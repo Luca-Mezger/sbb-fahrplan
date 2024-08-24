@@ -43,7 +43,7 @@ class Data():
 
 # SQL query to retrieve arrival times from old and new databases
 
-        querry = f"""
+        query = f"""
 SELECT
 group_concat(fplan_stop_times.fplan_trip_bitfeld_id) AS trip_bitfield_id,
 group_concat(fplan_stop_times.stop_arrival) AS stop_arrs,
@@ -65,8 +65,8 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 ;
 """
 
-        old_arr_times = self.__get_data_old(querry)
-        new_arr_times = self.__get_data_new(querry)
+        old_arr_times = self.__get_data_old(query)
+        new_arr_times = self.__get_data_new(query)
 
 
         old_arr_dict = {el[2]: el for el in old_arr_times if el[1] != ""}
@@ -109,8 +109,10 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
                             out_list = list(old_stops_dict[old_stop])
                             time = self.__24h_swap(out_list[0])
                             out_list[0] = f"{time[:2]}:{time[2:]}"
+                            out_list.append(nearest_stop[1])
                             connection_miss.append(out_list)
 
+#                    print(connection_miss)
 
 
                 return_list.append((f"{old_time[:2]}:{old_time[2:]}",
