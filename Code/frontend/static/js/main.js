@@ -180,155 +180,161 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+
+
+    let agencyCache = {}; // Global cache for storing agency data
+
+    function fetchAndCacheAgencies() {
+        return fetch('/agency')
+            .then(response => response.json())
+            .then(agencyList => {
+                let newCache = {};
+                agencyList.forEach(agency => {
+                    newCache[agency[0]] = agency[2]; // Cache the agency data
+                });
+                agencyCache = newCache; // Replace the old cache with the new one
+            });
+    }
+    
     function displayResults(data) {
         resultsContainer.innerHTML = '';
         const table = document.createElement('table');
         table.classList.add('results-table');
     
-        // Fetch the agency data and store it in a map
-        let agencyData = {}; // Map from agency-id to agency kürzel
-        fetch('/agency')
-            .then(response => response.json())
-            .then(agencyList => {
-                agencyList.forEach(agency => {
-                    agencyData[agency[0]] = agency[2]; // Store kürzel by agency-id
-                });
-    
-                // Now that the agency data is available, process the main data
-                data.forEach(item => {
-                    const row = document.createElement('tr');
-    
-                    const timeCell = document.createElement('td');
-    
-                    const trainInfo = document.createElement('div');
-                    trainInfo.classList.add('train-info');
-    
-                    // Train SVG icon
-                    const trainSvg = document.createElement('img');
-                    trainSvg.src = '/static/assets/train.svg';
-                    trainSvg.alt = 'Train Icon';
-                    trainSvg.classList.add('train-svg-icon');
-    
-                    // Train-specific icon (e.g., RE 5 or RE)
-                    const trainType = item[2].toLowerCase(); // e.g., "re"
-                    const trainNumber = item[3]; // e.g., "5"
-                    let trainIconUrl;
-    
-                    if (trainNumber) {
-                        // If the train number is present, include it in the URL
-                        trainIconUrl = `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg`;
-                    } else {
-                        // If the train number is not present, just use the train type
-                        trainIconUrl = `https://icons.app.sbb.ch/icons/${trainType}.svg`;
-                    }
-    
-                    const trainIcon = document.createElement('img');
-                    trainIcon.src = trainIconUrl;
-                    trainIcon.alt = `${item[2]} ${item[3]}`; // alt text as train name, e.g., "RE 5"
-                    trainIcon.classList.add('train-icon'); // Larger size
-    
-                    const trainTimes = document.createElement('div');
-                    trainTimes.classList.add('train-times');
-    
-                    const arrivalWithout = document.createElement('div');
-                    arrivalWithout.setAttribute('data-label', 'Ankunft ohne Baustelle:');
-                    arrivalWithout.classList.add('time');
-                    arrivalWithout.textContent = item[0] || '-'; // scheduled arrival time or '-'
-    
-                    const arrivalWith = document.createElement('div');
-                    arrivalWith.setAttribute('data-label', 'Ankunft mit Baustelle:');
-                    arrivalWith.classList.add('time');
-                    arrivalWith.textContent = item[1] || '-'; // actual arrival time or '-'
-    
-                    // Dropdown button
-                    const dropdownButton = document.createElement('button');
-                    dropdownButton.textContent = 'Details';
-                    dropdownButton.classList.add('dropdown-button');
-    
-                    // Dropdown content
-                    const dropdownContent = document.createElement('div');
-                    dropdownContent.classList.add('dropdown-content');
-                    dropdownContent.style.display = 'none'; // Initially hidden
-    
-                    // Add bus, tram, or ship information to the dropdown
-                    item[6].forEach(subItem => {
-                        const detail = document.createElement('div');
-                        detail.classList.add('transport-info');
-                        detail.style.display = 'flex';
-                        detail.style.alignItems = 'center';
-    
-                        // Determine the appropriate icon based on the transport type (B, T, S)
-                        let iconUrl;
-                        if (subItem[1] === 'B') {
-                            iconUrl = 'https://icons.app.sbb.ch/icons/bus-profile-small.svg';
-                        } else if (subItem[1] === 'T') {
-                            iconUrl = 'https://icons.app.sbb.ch/icons/tram-small.svg';
-                        } else if (subItem[1] === 'S') {
-                            iconUrl = 'https://icons.app.sbb.ch/icons/boat-profile-small.svg';
-                        }
-    
-                        const transportIcon = document.createElement('img');
-                        transportIcon.src = iconUrl;
-                        transportIcon.alt = subItem[1]; // B, T, or S
-                        transportIcon.classList.add('transport-icon'); // Adjust size accordingly
-                        transportIcon.style.marginRight = '10px'; // Add some space between icon and text
-    
-                        // Match the agency ID with the agency kürzel
-                        const agencyKuerzel = agencyData[subItem[4]] || '-'; // Get kürzel from agency-id or '-'
-    
-                        // Create the formatted text similar to the image
-                        const transportDetails = document.createElement('div');
-                        transportDetails.style.display = 'flex';
-                        transportDetails.style.alignItems = 'center';
-    
-                        const kuerzelField = document.createElement('span');
-                        kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
-                        kuerzelField.style.marginRight = '10px'; // Spacing between kürzel and icon
-    
-                        const abfahrtszeitField = document.createElement('div');
-                        abfahrtszeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
-    
-                        const kanteField = document.createElement('div');
-                        kanteField.style.marginLeft = '20px';
-                        kanteField.innerHTML = `<strong>Kante:</strong><br>${subItem[3] || '-'}`;
-    
-                        const nummerField = document.createElement('div');
-                        nummerField.style.marginLeft = '20px';
-                        nummerField.innerHTML = `<strong>Nr.:</strong><br>${subItem[5] || '-'}`;
-    
-                        // Append the icon and details to the detail div
-                        transportDetails.appendChild(kuerzelField);
-                        transportDetails.appendChild(transportIcon);
-                        transportDetails.appendChild(abfahrtszeitField);
-                        transportDetails.appendChild(kanteField);
-                        transportDetails.appendChild(nummerField);
-    
-                        // Add the detail div to the dropdownContent
-                        dropdownContent.appendChild(transportDetails);
-                    });
-    
-                    dropdownButton.addEventListener('click', function () {
-                        dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
-                    });
-    
-                    trainTimes.appendChild(arrivalWithout);
-                    trainTimes.appendChild(arrivalWith);
-    
-                    trainInfo.appendChild(trainSvg); // Append the train SVG icon first
-                    trainInfo.appendChild(trainIcon); // Then append the specific train icon
-                    timeCell.appendChild(trainInfo);
-                    timeCell.appendChild(trainTimes);
-                    timeCell.appendChild(dropdownButton); // Add the dropdown button
-                    timeCell.appendChild(dropdownContent); // Add the dropdown content
-    
-                    row.appendChild(timeCell);
-                    table.appendChild(row); // add row to table
-                });
-    
-                resultsContainer.appendChild(table);
-            })
-            .catch(error => console.error('Error fetching agency data:', error));
+        // Check if we need to fetch the agencies
+        if (Object.keys(agencyCache).length === 0) {
+            fetchAndCacheAgencies().then(() => populateResults(data, table));
+        } else {
+            populateResults(data, table);
+        }
     }
+    
+    function populateResults(data, table) {
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            const timeCell = document.createElement('td');
+    
+            const resultItem = document.createElement('div');
+            resultItem.classList.add('result-item');
+    
+            const trainInfo = document.createElement('div');
+            trainInfo.classList.add('train-info');
+    
+            const trainSvg = document.createElement('img');
+            trainSvg.src = '/static/assets/train.svg';
+            trainSvg.alt = 'Train Icon';
+            trainSvg.classList.add('train-svg-icon');
+    
+            const trainType = item[2].toLowerCase();
+            const trainNumber = item[3];
+            let trainIconUrl = trainNumber ? `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg` : `https://icons.app.sbb.ch/icons/${trainType}.svg`;
+    
+            const trainIcon = document.createElement('img');
+            trainIcon.src = trainIconUrl;
+            trainIcon.alt = `${item[2]} ${item[3]}`;
+            trainIcon.classList.add('train-icon');
+    
+            const trainTimesAndButton = document.createElement('div');
+            trainTimesAndButton.classList.add('train-times-button-container');
+    
+            const trainTimes = document.createElement('div');
+            trainTimes.classList.add('train-times');
+    
+            const arrivalWithout = document.createElement('div');
+            arrivalWithout.setAttribute('data-label', 'Ankunft ohne Baustelle:');
+            arrivalWithout.classList.add('time');
+            arrivalWithout.textContent = item[0] || '-';
+    
+            const arrivalWith = document.createElement('div');
+            arrivalWith.setAttribute('data-label', 'Ankunft mit Baustelle:');
+            arrivalWith.classList.add('time');
+            arrivalWith.textContent = item[1] || '-';
+    
+            trainTimes.appendChild(arrivalWithout);
+            trainTimes.appendChild(arrivalWith);
+    
+            const detailsButton = document.createElement('button');
+            detailsButton.textContent = 'Details';
+            detailsButton.classList.add('details-button');
+    
+            const dropdownContent = document.createElement('div');
+            dropdownContent.classList.add('dropdown-content');
+    
+            item[6].forEach(subItem => {
+                const detail = document.createElement('div');
+                detail.classList.add('transport-info');
+    
+                let iconUrl;
+                if (subItem[1] === 'B') {
+                    iconUrl = 'https://icons.app.sbb.ch/icons/bus-profile-small.svg';
+                } else if (subItem[1] === 'T') {
+                    iconUrl = 'https://icons.app.sbb.ch/icons/tram-small.svg';
+                } else if (subItem[1] === 'S') {
+                    iconUrl = 'https://icons.app.sbb.ch/icons/boat-profile-small.svg';
+                }
+    
+                const transportIcon = document.createElement('img');
+                transportIcon.src = iconUrl;
+                transportIcon.alt = subItem[1];
+                transportIcon.classList.add('transport-icon');
+    
+                const agencyKuerzel = agencyCache[subItem[4]] || '-';
+    
+                const transportDetails = document.createElement('div');
+                transportDetails.style.display = 'flex';
+                transportDetails.style.alignItems = 'center';
+    
+                const kuerzelField = document.createElement('span');
+                kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
+                kuerzelField.style.marginRight = '10px';
+    
+                const abfahrtzeitField = document.createElement('span');
+                abfahrtzeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
+                abfahrtzeitField.style.marginRight = '20px';
+                abfahrtzeitField.style.marginLeft = '20px';
+    
+                const kanteField = document.createElement('span');
+                kanteField.innerHTML = `<strong>Kante:</strong><br>${subItem[3] || '-'}`;
+                kanteField.style.marginRight = '20px';
+    
+                const nrField = document.createElement('span');
+                nrField.innerHTML = `<strong>Nr.:</strong><br>${subItem[5] || '-'}`;
+    
+                transportDetails.appendChild(kuerzelField);
+                transportDetails.appendChild(transportIcon);
+                transportDetails.appendChild(abfahrtzeitField);
+                transportDetails.appendChild(kanteField);
+                transportDetails.appendChild(nrField);
+    
+                detail.appendChild(transportDetails);
+                dropdownContent.appendChild(detail);
+            });
+    
+            detailsButton.addEventListener('click', function () {
+                dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
+            });
+    
+            trainInfo.appendChild(trainSvg);
+            trainInfo.appendChild(trainIcon);
+            trainTimesAndButton.appendChild(trainTimes);
+            trainTimesAndButton.appendChild(detailsButton);
+    
+            resultItem.appendChild(trainInfo);
+            resultItem.appendChild(trainTimesAndButton);
+    
+            row.appendChild(resultItem);
+            row.appendChild(dropdownContent);
+            table.appendChild(row);
+        });
+    
+        resultsContainer.appendChild(table);
+    }
+    
+    
+    
+    
+    
+    
     
     
     

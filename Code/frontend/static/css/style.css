@@ -155,7 +155,8 @@ header .language-flag img {
 .noUi-connect {
     background: #EB0000;
 }
-.noUi-horizontal{
+
+.noUi-horizontal {
     height: 8px;
 }
 
@@ -279,20 +280,23 @@ header .language-flag img {
     align-items: center;
     font-weight: bold;
     color: #EB0000;
+    margin-right: 20px; /* Adjust spacing as needed */
 }
 
 .train-times {
-    color: #555;
-    font-size: 14px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: flex-end;
+    margin-right: auto !important;
+    color: #555;
+    font-size: 14px;
 }
 
 .train-times div {
     display: flex;
     justify-content: flex-start;
     width: 100%;
+    margin-bottom: 5px;
 }
 
 .train-times div::before {
@@ -307,16 +311,16 @@ header .language-flag img {
 }
 
 .train-svg-icon {
-    width: 24px; /* Original size of the train icon */
+    width: 32px;
     height: auto;
-    margin-right: 10px; /* Adjust spacing between icons */
+    margin-right: 10px;
 }
 
 .train-icon {
-    width: 100px; /* Larger size for the train-specific icons */
+    width: 60px;
     height: auto;
-    margin-right: 10px; /* Adjust spacing between icons */
-    vertical-align: middle; /* Align vertically with text if needed */
+    margin-right: 20px;
+    vertical-align: middle;
 }
 
 .results-table tr:hover {
@@ -351,4 +355,45 @@ footer {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* New Additions */
+.details-button {
+    padding: 10px 15px;
+    font-size: 14px;
+    background-color: #fff;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.dropdown-content {
+    width: 100%; /* Full width */
+    background-color: #f9f9f9;
+    padding: 15px;
+    max-width: 570px;
+    border-radius: 8px;
+    display: none; /* Initially hidden */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-top: 10px; /* Add space between the button and dropdown */
+    grid-column: 1 / -1; /* Ensure it spans the full width of the container */
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.train-times-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Align to the right */
+    flex: 1;
+    margin-right: auto;
 }
