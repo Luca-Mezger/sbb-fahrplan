@@ -1,9 +1,12 @@
 import sqlite3 as sq
+from datetime import datetime
 
 class Data():
 
     OLD_PATH = "../data/hrdf_2024-01-03.sqlite"
     NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
+
+    SBB_DATE = datetime(2023, 12, 10)
 
     def __init__(self,):
         pass
@@ -20,9 +23,11 @@ class Data():
 
         return self.__get_data_old("SELECT agency_id, full_name_de, long_name from agency")
 
-    def get_time_diffs_bhf(self, bhfs_id):
+    def get_time_diffs_bhf(self, bhfs_id, date):
         """Return a list of delayes
         """
+
+        sbb_days = self.__date_to_sbb(date)
 
         querry = f"""
 SELECT
@@ -35,7 +40,7 @@ AND fplan_trip_bitfeld.fplan_trip_bitfeld_id =
 fplan_stop_times.fplan_trip_bitfeld_id
 and fplan_stop_times.stop_id = "{bhfs_id}"
 AND fplan_trip_bitfeld.service_id = calendar.service_id
-AND SUBSTR(calendar.day_bits, 179, 1) = "1" 
+AND SUBSTR(calendar.day_bits, {sbb_days}, 1) = "1" 
 GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 ;
 """
@@ -76,8 +81,13 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
         cur.execute(statment)
         return cur.fetchall()
 
+    def __date_to_sbb(self, date):
+        date = datetime.strptime(date, "%Y-%m-%d")
+
+        return (date - self.SBB_DATE).days
+
 
 if __name__ == "__main__":
     data = Data()
 
-    print(data.get_time_diffs_bhf("8507000"))
+    print(data.get_time_diffs_bhf("8507100", "2023-06-26"))
