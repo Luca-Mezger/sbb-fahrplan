@@ -8,6 +8,7 @@ class Data():
     NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
 #    NEW_PATH = "../data/hrdf_2024-08-14.sqlite"
 
+# The beginning of the new timetable. 
     SBB_DATE = datetime(2023, 12, 10)
 
     def __init__(self,):
@@ -30,6 +31,8 @@ class Data():
         """
 
         sbb_days = self.__date_to_sbb(date)
+
+# SQL query to retrieve arrival times from old and new databases
 
         querry = f"""
 SELECT
@@ -94,6 +97,7 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
         return return_list
 
+# Compare old and new arrival times and store the differences
 
     def __get_data_old(self, statment):
         db = sq.connect(self.OLD_PATH)
