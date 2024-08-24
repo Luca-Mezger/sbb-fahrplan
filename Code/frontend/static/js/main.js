@@ -11,10 +11,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const startTimeDisplay = document.getElementById('start-time-display');
     const endTimeDisplay = document.getElementById('end-time-display');
     const loadingSpinner = document.getElementById('loading-spinner');
+    const transportunternehmenSuche = document.getElementById('transportunternehmen-suche');
+    const transportunternehmenSuggestions = document.getElementById('transportunternehmen-suggestions');
 
     let stations = [];
     let filteredNames = [];
     let allResults = [];
+    let transportunternehmen = []; // To store fetched data
+
+    // Set date picker to today's date
+    const today = new Date().toISOString().split('T')[0];
+    datePicker.value = today;
 
     // Hide time selection elements initially
     timeSelectionContainer.style.display = 'none';
@@ -26,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleArrow.textContent = isHidden ? '▲' : '▼'; // Change arrow direction
     });
 
-    // fetch station names and ids from the backend
+    // Fetch station names and ids from the backend
     fetch('/bhfs')
         .then(response => response.json())
         .then(data => {
@@ -36,10 +43,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }));
         });
 
-    // filter station names based on search query
+    // Fetch transportunternehmen data from the provided URL
+    fetch('http://127.0.0.1:5000/agency')
+        .then(response => response.json())
+        .then(data => {
+            transportunternehmen = data.map(item => ({
+                id: item[0],
+                displayName: `${item[1]} (${item[2]})`
+            }));
+        });
+
+    // Filter station names based on search query
     bahnhofSuche.addEventListener('input', function () {
         const query = bahnhofSuche.value.toLowerCase();
-        
+
         if (query.trim() === '') {
             suggestionsList.style.display = 'none';
             return;
@@ -69,10 +86,49 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // handle search button click
+    // Filter transportunternehmen based on search query
+    transportunternehmenSuche.addEventListener('input', function () {
+        const query = transportunternehmenSuche.value.toLowerCase();
+
+        if (query.trim() === '') {
+            transportunternehmenSuggestions.style.display = 'none';
+            return;
+        }
+
+        const filteredTransportunternehmen = transportunternehmen.filter(company =>
+            company.displayName.toLowerCase().includes(query)
+        );
+        displayTransportunternehmenSuggestions(filteredTransportunternehmen);
+    });
+
+    function displayTransportunternehmenSuggestions(filteredTransportunternehmen) {
+        transportunternehmenSuggestions.innerHTML = '';
+
+        if (filteredTransportunternehmen.length > 0) {
+            transportunternehmenSuggestions.style.display = 'block';
+            filteredTransportunternehmen.forEach(company => {
+                const listItem = document.createElement('li');
+                listItem.textContent = company.displayName;
+                listItem.addEventListener('click', function () {
+                    transportunternehmenSuche.value = company.displayName;
+                    transportunternehmenSuggestions.innerHTML = '';
+                    transportunternehmenSuggestions.style.display = 'none';
+                });
+                transportunternehmenSuggestions.appendChild(listItem);
+            });
+        } else {
+            transportunternehmenSuggestions.style.display = 'none';
+        }
+    }
+
+    // Handle search button click
     searchButton.addEventListener('click', function () {
         const selectedName = bahnhofSuche.value;
         const selectedDate = datePicker.value;
+        const selectedTransportCompany = transportunternehmenSuche.value;
+        const filterBus = document.getElementById('filter-bus').checked;
+        const filterTram = document.getElementById('filter-tram').checked;
+        const filterShip = document.getElementById('filter-ship').checked;
 
         const selectedStation = stations.find(station => station.name === selectedName);
 
@@ -85,7 +141,14 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    allResults = data;
+                    allResults = data.filter(result => {
+                        let passesFilter = true;
+                        if (filterBus) passesFilter = passesFilter && result.transportType === 'Bus';
+                        if (filterTram) passesFilter = passesFilter && result.transportType === 'Tram';
+                        if (filterShip) passesFilter = passesFilter && result.transportType === 'Ship';
+                        if (selectedTransportCompany) passesFilter = passesFilter && result.company.toLowerCase() === selectedTransportCompany.toLowerCase();
+                        return passesFilter;
+                    });
                     filterAndDisplayResults(); // display filtered results based on time range
                 })
                 .catch(error => {
@@ -100,87 +163,209 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+
     function filterAndDisplayResults() {
-        const [startTime, endTime] = slider.noUiSlider.get();
-        const start = parseTime(startTime);
-        const end = parseTime(endTime);
-
+        const selectedTransportCompany = transportunternehmenSuche.value.trim();
+        let selectedKuerzel = '';
+    
+        // Extract the Kürzel from the company name if provided (e.g., "STI Bus AG (STI)" -> "STI")
+        if (selectedTransportCompany) {
+            const match = selectedTransportCompany.match(/\(([^)]+)\)/);
+            if (match) {
+                selectedKuerzel = match[1].toLowerCase();
+            }
+        }
+    
         const filteredResults = allResults.filter(item => {
-            const arrivalTime = parseTime(item[0]);
-            return arrivalTime >= start && arrivalTime <= end;
+            // If there's a selected Kürzel, filter by it; otherwise, show all results
+            if (false) {
+                return item.kuerzel && item.kuerzel.toLowerCase() === selectedKuerzel;
+            } else {
+                return true; // No Kürzel specified, so include all results
+            }
         });
-
+    
         if (filteredResults.length === 0) {
             displayNoResults();
         } else {
             displayResults(filteredResults);
         }
     }
+    
+    
+    
+    
 
+
+    let agencyCache = {}; // Global cache for storing agency data
+
+    // Function to fetch agencies and update cache
+    function fetchAndCacheAgencies() {
+        return fetch('/agency')
+            .then(response => response.json())
+            .then(agencyList => {
+                let newCache = {};
+                agencyList.forEach(agency => {
+                    newCache[agency[0]] = agency[2]; // Cache the agency data
+                });
+                agencyCache = newCache; // Replace the old cache with the new one
+            });
+    }
+    
+    // Function to display results
     function displayResults(data) {
         resultsContainer.innerHTML = '';
         const table = document.createElement('table');
         table.classList.add('results-table');
-
+    
+        // Check if we need to fetch the agencies
+        if (Object.keys(agencyCache).length === 0) {
+            fetchAndCacheAgencies().then(() => populateResults(data, table));
+        } else {
+            populateResults(data, table);
+        }
+    }
+    
+    function populateResults(data, table) {
         data.forEach(item => {
             const row = document.createElement('tr');
-            
-            const timeCell = document.createElement('td');
-            
+            const resultItem = document.createElement('div');
+            resultItem.classList.add('result-item');
+    
             const trainInfo = document.createElement('div');
             trainInfo.classList.add('train-info');
-
-            // Train SVG icon
+    
             const trainSvg = document.createElement('img');
             trainSvg.src = '/static/assets/train.svg';
             trainSvg.alt = 'Train Icon';
             trainSvg.classList.add('train-svg-icon');
-
-            // Train-specific icon (e.g., RE 5 or RE)
-            const trainType = item[2].toLowerCase(); // e.g., "re"
-            const trainNumber = item[3]; // e.g., "5"
-            let trainIconUrl;
-
-            if (trainNumber) {
-                // If the train number is present, include it in the URL
-                trainIconUrl = `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg`;
-            } else {
-                // If the train number is not present, just use the train type
-                trainIconUrl = `https://icons.app.sbb.ch/icons/${trainType}.svg`;
-            }
-
+    
+            const trainType = item[2].toLowerCase();
+            const trainNumber = item[3];
+            let trainIconUrl = trainNumber 
+                ? `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg` 
+                : `https://icons.app.sbb.ch/icons/${trainType}.svg`;
+    
             const trainIcon = document.createElement('img');
             trainIcon.src = trainIconUrl;
-            trainIcon.alt = `${item[2]} ${item[3]}`; // alt text as train name, e.g., "RE 5"
-            trainIcon.classList.add('train-icon'); // Larger size
-
+            trainIcon.alt = `${item[2]} ${item[3]}`;
+            trainIcon.classList.add('train-icon');
+    
+            const trainTimesAndButton = document.createElement('div');
+            trainTimesAndButton.classList.add('train-times-button-container');
+    
             const trainTimes = document.createElement('div');
             trainTimes.classList.add('train-times');
-
+    
             const arrivalWithout = document.createElement('div');
-            arrivalWithout.setAttribute('data-label', 'Ankunft ohne Baustelle:');
+            //arrivalWithout.setAttribute('data-label', 'Ankunft nach Zeitplan :');
+            fetch('http://127.0.0.1:5000/new_db').then(response => response.text()).then(text => arrivalWithout.setAttribute('data-label', `Zeitplan ${text}:`));
             arrivalWithout.classList.add('time');
-            arrivalWithout.textContent = item[0]; // scheduled arrival time
-
+            arrivalWithout.textContent = item[0] || '-';
+    
             const arrivalWith = document.createElement('div');
-            arrivalWith.setAttribute('data-label', 'Ankunft mit Baustelle:');
-            arrivalWith.classList.add('time');
-            arrivalWith.textContent = item[1]; // actual arrival time
+            //arrivalWith.setAttribute('data-label', 'Ankunft nach Zeitplan :');
+            fetch('http://127.0.0.1:5000/old_db').then(response => response.text()).then(text => arrivalWith.setAttribute('data-label', `Zeitplan ${text}:`));
 
+            arrivalWith.classList.add('time');
+            arrivalWith.textContent = item[1] || '-';
+    
             trainTimes.appendChild(arrivalWithout);
             trainTimes.appendChild(arrivalWith);
-
-            trainInfo.appendChild(trainSvg); // Append the train SVG icon first
-            trainInfo.appendChild(trainIcon); // Then append the specific train icon
-            timeCell.appendChild(trainInfo);
-            timeCell.appendChild(trainTimes);
-            row.appendChild(timeCell);
-
-            table.appendChild(row); // add row to table
+    
+            const detailsButton = document.createElement('button');
+            detailsButton.textContent = 'Betroffene Verbindungen';
+            detailsButton.classList.add('details-button');
+    
+            const dropdownContent = document.createElement('div');
+            dropdownContent.classList.add('dropdown-content');
+    
+            // Add hr element here
+            const separator = document.createElement('hr');
+            separator.classList.add('result-separator');
+            separator.style.marginTop = 0; // Initially hidden
+            separator.style.marginBottom = 0; 
+            separator.style.display = 'none'; // Initially hidden
+    
+            item[6].forEach(subItem => {
+                const detail = document.createElement('div');
+                detail.classList.add('transport-info');
+    
+                let iconUrl;
+                if (subItem[1] === 'B') {
+                    iconUrl = 'https://icons.app.sbb.ch/icons/bus-profile-small.svg';
+                } else if (subItem[1] === 'T') {
+                    iconUrl = 'https://icons.app.sbb.ch/icons/tram-small.svg';
+                } else if (subItem[1] === 'S') {
+                    iconUrl = 'https://icons.app.sbb.ch/icons/boat-profile-small.svg';
+                }
+    
+                const transportIcon = document.createElement('img');
+                transportIcon.src = iconUrl;
+                transportIcon.alt = subItem[1];
+                transportIcon.classList.add('transport-icon');
+    
+                const agencyKuerzel = agencyCache[subItem[4]] || '-';
+    
+                const transportDetails = document.createElement('div');
+                transportDetails.style.display = 'flex';
+                transportDetails.style.alignItems = 'center';
+    
+                const kuerzelField = document.createElement('span');
+                kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
+                kuerzelField.style.marginRight = '10px';
+    
+                const abfahrtzeitField = document.createElement('span');
+                abfahrtzeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
+                abfahrtzeitField.style.marginRight = '20px';
+                abfahrtzeitField.style.marginLeft = '20px';
+    
+                const kanteField = document.createElement('span');
+                kanteField.innerHTML = `<strong>Kante:</strong><br>${subItem[3] || '-'}`;
+                kanteField.style.marginRight = '20px';
+    
+                const nrField = document.createElement('span');
+                nrField.innerHTML = `<strong>Nr.:</strong><br>${subItem[5] || '-'}`;
+    
+                transportDetails.appendChild(kuerzelField);
+                transportDetails.appendChild(transportIcon);
+                transportDetails.appendChild(abfahrtzeitField);
+                transportDetails.appendChild(kanteField);
+                transportDetails.appendChild(nrField);
+    
+                detail.appendChild(transportDetails);
+                dropdownContent.appendChild(detail);
+            });
+    
+            detailsButton.addEventListener('click', function() {
+                const isVisible = dropdownContent.style.display === 'block';
+                dropdownContent.style.display = isVisible ? 'none' : 'block';
+                separator.style.display = isVisible ? 'none' : 'block'; // Toggle hr visibility
+            });
+    
+            trainInfo.appendChild(trainSvg);
+            trainInfo.appendChild(trainIcon);
+            trainTimesAndButton.appendChild(trainTimes);
+            trainTimesAndButton.appendChild(detailsButton);
+    
+            resultItem.appendChild(trainInfo);
+            resultItem.appendChild(trainTimesAndButton);
+    
+            row.appendChild(resultItem);
+            row.appendChild(separator); // Append hr before dropdown content
+            row.appendChild(dropdownContent);
+            table.appendChild(row);
         });
-
+    
         resultsContainer.appendChild(table);
     }
+    
+    
+    
+    
+    
+    
+    
 
     function displayNoResults() {
         resultsContainer.innerHTML = '';
@@ -189,13 +374,13 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsContainer.appendChild(noResultsMessage);
     }
 
-    // parse time in 'HH:MM' format to minutes since midnight
+    // Parse time in 'HH:MM' format to minutes since midnight
     function parseTime(timeStr) {
         const [hours, minutes] = timeStr.split(':').map(Number);
         return hours * 60 + minutes;
     }
 
-    // initialize time range slider
+    // Initialize time range slider
     var slider = document.getElementById('range-slider');
 
     noUiSlider.create(slider, {
@@ -218,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // update time display when slider values change
+    // Update time display when slider values change
     slider.noUiSlider.on('update', function(values, handle) {
         if (handle === 0) {
             startTimeDisplay.textContent = values[0]; // update start time display
@@ -229,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function () {
         filterAndDisplayResults(); // update results based on the selected time range
     });
 
-    // preset buttons for common time ranges
+    // Preset buttons for common time ranges
     document.getElementById('morning-button').addEventListener('click', function() {
         slider.noUiSlider.set([0, 12]);
     });
