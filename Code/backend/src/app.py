@@ -1,36 +1,51 @@
-from flask import Flask, render_template, jsonify, request
+# Import necessary modules from Flask
+from flask import Flask, render_template, jsonify
+# Import Data class from data module
 from data.data import Data
 
+# Create a Flask application instance
 app = Flask(__name__,
             template_folder='../../frontend/templates', 
-            static_folder='../../frontend/static')       
+            static_folder='../../frontend/static')     
 
+# Instance Data class
 data = Data()
 
+# Define a route for the home page 
 @app.route("/")
 def home():
-    return render_template('index.html')
+    return render_template('index.html') 
 
+# Define a route to get a list of train stations
 @app.route("/bhfs")
 def bhfs():
-    bhfs_list = data.get_bhfs()
-    return jsonify(bhfs_list)  #return as json
+    bhfs_list = data.get_bhfs() 
+    return jsonify(bhfs_list)   
 
+# Define a route to get a list of agencies
 @app.route("/agency")
 def agency():
-    agency_list = data.get_agency()
-    return jsonify(agency_list)  
+    agency_list = data.get_agency() 
+    return jsonify(agency_list) 
 
-'''
-@app.route('/search')
-def search():
-    return "Search results for bhf"
-'''
+# Define a route to get a list of new path to db
+@app.route("/new_db/")
+def new():
+    db_new = data.__get_data_new
+    return jsonify(db_new) 
 
+# Define a route to get a list of old path to db
+@app.route("/old_db/")
+def old():
+    db_old = data.__get_data_old
+    return jsonify(db_old) 
+
+# Define a route to get time differences for a specific train station on a given date
 @app.route("/bhfs/<date>/<id>")
 def dateId(date, id):
-    dateId_list = data.get_time_diffs_bhf(id, date)
+    dateId_list = data.get_time_diffs_bhf(id, date) 
     return dateId_list
 
+# Run the Flask application in debug mode
 if __name__ == "__main__":
     app.run(debug=True)

@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bahnhof Suche</title>
     <link rel="icon" href="{{ url_for('static', filename='assets/favicon.png') }}" type="image/image/png">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" rel="stylesheet"> <!-- noUiSlider CSS for the time slider-->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
         <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="Logo" class="logo">
         <div class="language-flag">
-            <!-- SVG Icon -->
+          <!-- TODO: add svg for flag-->
         </div>
     </header>
     
@@ -20,43 +20,53 @@
         <div id="search-container">
             <div class="search-box" id="search-box">
                 <div class="search-bar-container">
+                    <div class="search-icon-container">
+                        <img src="https://icons.app.sbb.ch/icons/location-pin-small.svg" alt="Bahnhof Icon" class="search-icon">
+                    </div>
                     <input type="text" id="bahnhof-suche" placeholder="Bahnhof Suche" autocomplete="off">
                     <button id="search-button">Suchen</button>
                     <ul id="suggestions" class="suggestions-dropdown"></ul>
                     <input type="date" id="date-picker" class="date-picker">
                 </div>
 
-                <div class="slider-display-container">
-                    <span id="start-time-display">00:00</span>
-                    <span class="separator">-</span>
-                    <span id="end-time-display">00:00</span>
+                <div class="advanced-settings-toggle">
+                    <span id="advanced-settings-toggle">Erweiterte Einstellungen <span id="toggle-arrow">▼</span></span>
                 </div>
 
-                <div class="slider-container">
-                    <div class="slider-labels">
-                        <span>00:00</span>
-                        <span>23:59</span>
+                <div id="time-selection-container">
+                    <div class="slider-display-container">
+                        <span id="start-time-display">00:00</span>
+                        <span class="separator">-</span>
+                        <span id="end-time-display">00:00</span>
                     </div>
-                    <div id="range-slider"></div>
-                </div>
 
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>00:00</span>
+                            <span>23:59</span>
+                        </div>
+                        <div id="range-slider"></div>
+                    </div>
 
-                <div class="buttons-container">
-                    <button id="morning-button" class="action-button">Morgen</button>
-                    <button id="midday-button" class="action-button">Mittag</button>
-                    <button id="evening-button" class="action-button">Abend</button>
+                    <div class="buttons-container">
+                        <button id="morning-button" class="action-button">Morgen</button>
+                        <button id="midday-button" class="action-button">Mittag</button>
+                        <button id="evening-button" class="action-button">Abend</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="results-container" class="results-container"></div>
+        <div id="loading-spinner" class="spinner" style="display: none;"></div>
+
     </div>
 
     <footer>
         <p>&copy; 2024 TrainHackers. All rights reserved.</p>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script> <!-- noUiSlider JS for the time slider-->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ class Data():
 #    NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
     NEW_PATH = "../data/hrdf_2024-08-14.sqlite"
 
+# The beginning of the new timetable. 
     SBB_DATE = datetime(2023, 12, 10)
     SEARCH_TIME_WINDOW = 29
 
@@ -31,6 +32,8 @@ class Data():
         """
 
         sbb_days = self.__date_to_sbb(date)
+
+# SQL query to retrieve arrival times from old and new databases
 
         querry = f"""
 SELECT
@@ -112,6 +115,7 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
         return return_list
 
+# Compare old and new arrival times and store the differences
 
     def __24h_swap(self, time_string):
         hours = int(time_string[:2])
