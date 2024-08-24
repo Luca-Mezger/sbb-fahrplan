@@ -2,71 +2,104 @@ document.addEventListener('DOMContentLoaded', function () {
     const bahnhofSuche = document.getElementById('bahnhof-suche');
     const searchButton = document.getElementById('search-button');
     const suggestionsList = document.getElementById('suggestions');
+    const datePicker = document.getElementById('date-picker');
 
-    let names = [];
+    let stations = [];
     let filteredNames = [];
 
-    // Fetch the list of names from the backend
-    fetch('/api/names')
+    // fetch the list of station names and ids from the backend
+    fetch('/bhfs')
         .then(response => response.json())
         .then(data => {
-            names = data;
+            // store the data as a list of objects with id and name
+            stations = data.map(station => ({
+                id: station[0],
+                name: station[1]
+            }));
         });
 
-    // Filter names based on the search query
+    // filter names based on search query
     bahnhofSuche.addEventListener('input', function () {
         const query = bahnhofSuche.value.toLowerCase();
-        filteredNames = names.filter(name => name.toLowerCase().includes(query));
+        filteredNames = stations.filter(station => station.name.toLowerCase().includes(query));
         displaySuggestions();
     });
 
-    // Display the filtered suggestions in the dropdown
+    // display filtered suggestions
     function displaySuggestions() {
         suggestionsList.innerHTML = '';
-        if (filteredNames.length > 0) {
-            filteredNames.forEach(name => {
-                const listItem = document.createElement('li');
-                listItem.textContent = name;
-                listItem.addEventListener('click', function () {
-                    bahnhofSuche.value = name;
-                    suggestionsList.innerHTML = '';
-                });
-                suggestionsList.appendChild(listItem);
+        filteredNames.forEach(station => {
+            const listItem = document.createElement('li');
+            listItem.textContent = station.name;
+            listItem.addEventListener('click', function () {
+                bahnhofSuche.value = station.name;
+                suggestionsList.innerHTML = '';
             });
-        }
+            suggestionsList.appendChild(listItem);
+        });
     }
 
-    // Handle the search button click
+    // handle search button click
     searchButton.addEventListener('click', function () {
-        const query = bahnhofSuche.value.toLowerCase();
-        alert('Searching for: ' + query);
-        // Implement search functionality here if needed
+        const selectedName = bahnhofSuche.value;
+        const selectedDate = datePicker.value; // this will be in 'yyyy-mm-dd' format
+    
+        // find the station id by matching the selected name
+        const selectedStation = stations.find(station => station.name === selectedName);
+    
+        if (selectedStation && selectedDate) {
+            // send the request with the station id and date
+            const url = `/bhfs/${selectedDate}/${selectedStation.id}`;
+            fetch(url, {
+                method: 'POST', // or 'GET' depending on your flask route method
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ date: selectedDate }) // date is sent in the body as well
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('success:', data);
+                // handle the response as needed
+            })
+            .catch(error => {
+                console.error('error:', error);
+            });
+        } else {
+            alert('please select a valid station and date.');
+        }
     });
+    
 
-    // Initialize the slider
+    // slider and button click event listeners remain unchanged
     var slider = document.getElementById('range-slider');
     var startTimeDisplay = document.getElementById('start-time-display');
     var endTimeDisplay = document.getElementById('end-time-display');
 
     noUiSlider.create(slider, {
-        start: [0, 12], // Initial values for the two handles (00:00 to 12:00)
+        start: [20, 24], 
         connect: true, 
         step: 1, 
         range: {
             'min': 0,
-            'max': 23 
+            'max': 24 
         },
         format: {
             to: function(value) {
+                if (value === 24) {
+                    return '23:59';
+                }
                 return ('0' + Math.floor(value)).slice(-2) + ":00";
             },
             from: function(value) {
+                if (value === '23:59') {
+                    return 24;
+                }
                 return Number(value.replace(":00", ""));
             }
         }
     });
 
-    // Update display when slider values change
     slider.noUiSlider.on('update', function(values, handle) {
         if (handle === 0) {
             startTimeDisplay.textContent = values[0];
@@ -75,16 +108,41 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Button click event listeners
     document.getElementById('morning-button').addEventListener('click', function() {
-        slider.noUiSlider.set([0, 12]); // Set slider to 00:00 - 12:00
+        slider.noUiSlider.set([0, 12]);
     });
 
     document.getElementById('midday-button').addEventListener('click', function() {
-        slider.noUiSlider.set([10, 15]); // Set slider to 10:00 - 15:00
+        slider.noUiSlider.set([10, 15]);
     });
 
     document.getElementById('evening-button').addEventListener('click', function() {
-        slider.noUiSlider.set([16, 23]); // Set slider to 16:00 - 23:00
+        slider.noUiSlider.set([16, 24]);
     });
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const datePicker = document.getElementById('date-picker');
+
+    // set the minimum date to 10 december 2023
+    const minDate = new Date('2023-12-10');
+    
+    // get today's date
+    const today = new Date();
+    
+    // add 3 months to today's date
+    const maxDate = new Date(today);
+    maxDate.setMonth(maxDate.getMonth() + 3);
+    
+    // format the dates to yyyy-mm-dd
+    const formatDate = (date) => {
+        let day = String(date.getDate()).padStart(2, '0');
+        let month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-based
+        let year = date.getFullYear();
+        return `${year}-${month}-${day}`;
+    };
+
+    datePicker.min = formatDate(minDate);
+    datePicker.max = formatDate(maxDate);
 });

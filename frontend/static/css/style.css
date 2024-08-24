@@ -67,7 +67,7 @@ header .language-flag img {
 #search-button {
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #333;
+    background-color: #EB0000;
     color: white;
     border: none;
     border-radius: 0 4px 4px 0;
@@ -105,13 +105,22 @@ header .language-flag img {
     background-color: #f4f4f4;
 }
 
+.date-picker {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    margin-left: 10px;
+}
+
+
 .slider-container {
     margin: 20px 0;
     margin-top: 50px;
     position: relative;
     width: 100%;
 }
-
 
 .slider-labels {
     display: flex;
@@ -147,8 +156,10 @@ header .language-flag img {
 .buttons-container {
     margin-top: 20px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Centers the buttons horizontally */
+    gap: 10px; /* Adds space between buttons */
 }
+
 
 .action-button {
     padding: 10px 20px;
