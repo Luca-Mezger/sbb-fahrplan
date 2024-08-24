@@ -3,75 +3,141 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchButton = document.getElementById('search-button');
     const suggestionsList = document.getElementById('suggestions');
     const datePicker = document.getElementById('date-picker');
+    const resultsContainer = document.getElementById('results-container');
+    const searchContainer = document.getElementById('search-container');
 
     let stations = [];
     let filteredNames = [];
 
-    // fetch the list of station names and ids from the backend
+    // Fetch the list of station names and ids from the backend
     fetch('/bhfs')
         .then(response => response.json())
         .then(data => {
-            // store the data as a list of objects with id and name
+            // Store the data as a list of objects with id and name
             stations = data.map(station => ({
                 id: station[0],
                 name: station[1]
             }));
         });
 
-    // filter names based on search query
+    // Filter names based on search query
     bahnhofSuche.addEventListener('input', function () {
         const query = bahnhofSuche.value.toLowerCase();
+        
+        if (query.trim() === '') {
+            suggestionsList.style.display = 'none'; // Hide the dropdown if search field is empty
+            return;
+        }
+
         filteredNames = stations.filter(station => station.name.toLowerCase().includes(query));
         displaySuggestions();
     });
 
-    // display filtered suggestions
+    // Display filtered suggestions
     function displaySuggestions() {
         suggestionsList.innerHTML = '';
-        filteredNames.forEach(station => {
-            const listItem = document.createElement('li');
-            listItem.textContent = station.name;
-            listItem.addEventListener('click', function () {
-                bahnhofSuche.value = station.name;
-                suggestionsList.innerHTML = '';
+
+        if (filteredNames.length > 0) {
+            suggestionsList.style.display = 'block'; // Show dropdown if there are results
+            filteredNames.forEach(station => {
+                const listItem = document.createElement('li');
+                listItem.textContent = station.name;
+                listItem.addEventListener('click', function () {
+                    bahnhofSuche.value = station.name;
+                    suggestionsList.innerHTML = '';
+                    suggestionsList.style.display = 'none'; // Hide dropdown on selection
+                });
+                suggestionsList.appendChild(listItem);
             });
-            suggestionsList.appendChild(listItem);
-        });
+        } else {
+            suggestionsList.style.display = 'none'; // Hide dropdown if no results
+        }
     }
 
-    // handle search button click
+    // Handle search button click
     searchButton.addEventListener('click', function () {
         const selectedName = bahnhofSuche.value;
         const selectedDate = datePicker.value; // this will be in 'yyyy-mm-dd' format
     
-        // find the station id by matching the selected name
+        // Find the station id by matching the selected name
         const selectedStation = stations.find(station => station.name === selectedName);
     
         if (selectedStation && selectedDate) {
-            // send the request with the station id and date
+            // Move the search box up slightly by increasing its margin-top
+            searchContainer.style.marginTop = '-15px';
+
+            // Ensure results container is visible after search
+            resultsContainer.style.display = 'block';
+
+            // Send the request with the station id and date
             const url = `/bhfs/${selectedDate}/${selectedStation.id}`;
-            fetch(url, {
-                method: 'POST', // or 'GET' depending on your flask route method
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ date: selectedDate }) // date is sent in the body as well
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('success:', data);
-                // handle the response as needed
-            })
-            .catch(error => {
-                console.error('error:', error);
-            });
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    if (data.length === 0) {
+                        displayNoResults();
+                    } else {
+                        displayResults(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         } else {
-            alert('please select a valid station and date.');
+            alert('Please select a valid station and date.');
         }
     });
-    
 
-    // slider and button click event listeners remain unchanged
+    function displayResults(data) {
+        // Clear previous results
+        resultsContainer.innerHTML = '';
+
+        // Create a table to display the results
+        const table = document.createElement('table');
+        table.classList.add('results-table');
+
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            
+            const timeCell = document.createElement('td');
+            const trainInfo = `${item[2]} ${item[3]}`; // Combine train type and number (e.g., RE 5)
+            timeCell.textContent = `${trainInfo}: Ankunft ohne Baustelle: ${item[0]} | Ankunft mit Baustelle: ${item[1]}`;
+            row.appendChild(timeCell);
+
+            table.appendChild(row);
+        });
+
+        resultsContainer.appendChild(table);
+    }
+
+    function displayNoResults() {
+        // Clear previous results
+        resultsContainer.innerHTML = '';
+
+        // Display "No results" message
+        const noResultsMessage = document.createElement('p');
+        noResultsMessage.textContent = 'Keine Verspätungen gefunden.';
+        resultsContainer.appendChild(noResultsMessage);
+    }
+
+    // Initialize date picker with min and max dates
+    const minDate = new Date('2023-12-10');
+    const today = new Date();
+    const maxDate = new Date(today);
+    maxDate.setMonth(maxDate.getMonth() + 3);
+
+    const formatDate = (date) => {
+        let day = String(date.getDate()).padStart(2, '0');
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let year = date.getFullYear();
+        return `${year}-${month}-${day}`;
+    };
+
+    datePicker.min = formatDate(minDate);
+    datePicker.max = formatDate(maxDate);
+
+    // Slider initialization
     var slider = document.getElementById('range-slider');
     var startTimeDisplay = document.getElementById('start-time-display');
     var endTimeDisplay = document.getElementById('end-time-display');
@@ -119,30 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('evening-button').addEventListener('click', function() {
         slider.noUiSlider.set([16, 24]);
     });
-});
 
-
-document.addEventListener('DOMContentLoaded', function () {
-    const datePicker = document.getElementById('date-picker');
-
-    // set the minimum date to 10 december 2023
-    const minDate = new Date('2023-12-10');
-    
-    // get today's date
-    const today = new Date();
-    
-    // add 3 months to today's date
-    const maxDate = new Date(today);
-    maxDate.setMonth(maxDate.getMonth() + 3);
-    
-    // format the dates to yyyy-mm-dd
-    const formatDate = (date) => {
-        let day = String(date.getDate()).padStart(2, '0');
-        let month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-based
-        let year = date.getFullYear();
-        return `${year}-${month}-${day}`;
-    };
-
-    datePicker.min = formatDate(minDate);
-    datePicker.max = formatDate(maxDate);
+    // Initially hide the results container
+    resultsContainer.style.display = 'none';
 });
