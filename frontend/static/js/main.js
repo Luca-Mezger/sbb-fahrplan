@@ -120,3 +120,29 @@ document.addEventListener('DOMContentLoaded', function () {
         slider.noUiSlider.set([16, 24]);
     });
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const datePicker = document.getElementById('date-picker');
+
+    // set the minimum date to 10 december 2023
+    const minDate = new Date('2023-12-10');
+    
+    // get today's date
+    const today = new Date();
+    
+    // add 3 months to today's date
+    const maxDate = new Date(today);
+    maxDate.setMonth(maxDate.getMonth() + 3);
+    
+    // format the dates to yyyy-mm-dd
+    const formatDate = (date) => {
+        let day = String(date.getDate()).padStart(2, '0');
+        let month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-based
+        let year = date.getFullYear();
+        return `${year}-${month}-${day}`;
+    };
+
+    datePicker.min = formatDate(minDate);
+    datePicker.max = formatDate(maxDate);
+});
