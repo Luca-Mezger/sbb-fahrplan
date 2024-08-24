@@ -5,12 +5,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const datePicker = document.getElementById('date-picker');
     const resultsContainer = document.getElementById('results-container');
     const searchContainer = document.getElementById('search-container');
+    const advancedSettingsToggle = document.getElementById('advanced-settings-toggle');
+    const toggleArrow = document.getElementById('toggle-arrow');
+    const timeSelectionContainer = document.getElementById('time-selection-container');
     const startTimeDisplay = document.getElementById('start-time-display');
     const endTimeDisplay = document.getElementById('end-time-display');
-    
+    const loadingSpinner = document.getElementById('loading-spinner');
+
     let stations = [];
     let filteredNames = [];
-    let allResults = []; 
+    let allResults = [];
+
+    // Hide time selection elements initially
+    timeSelectionContainer.style.display = 'none';
+
+    // Toggle advanced settings
+    advancedSettingsToggle.addEventListener('click', function () {
+        const isHidden = timeSelectionContainer.style.display === 'none';
+        timeSelectionContainer.style.display = isHidden ? 'block' : 'none';
+        toggleArrow.textContent = isHidden ? '▲' : '▼'; // Change arrow direction
+    });
 
     // fetch station names and ids from the backend
     fetch('/bhfs')
@@ -64,7 +78,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (selectedStation && selectedDate) {
             searchContainer.style.marginTop = '-15px';
-            resultsContainer.style.display = 'block';
+            resultsContainer.style.display = 'none'; // Hide results container initially
+            loadingSpinner.style.display = 'block';  // Show the spinner
 
             const url = `/bhfs/${selectedDate}/${selectedStation.id}`;
             fetch(url)
@@ -75,6 +90,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                })
+                .finally(() => {
+                    loadingSpinner.style.display = 'none';  // Hide the spinner
+                    resultsContainer.style.display = 'block'; // Show results container
                 });
         } else {
             alert('Please select a valid station and date.');
@@ -111,15 +130,29 @@ document.addEventListener('DOMContentLoaded', function () {
             const trainInfo = document.createElement('div');
             trainInfo.classList.add('train-info');
 
+            // Train SVG icon
+            const trainSvg = document.createElement('img');
+            trainSvg.src = '/static/assets/train.svg';
+            trainSvg.alt = 'Train Icon';
+            trainSvg.classList.add('train-svg-icon');
+
+            // Train-specific icon (e.g., RE 5 or RE)
+            const trainType = item[2].toLowerCase(); // e.g., "re"
+            const trainNumber = item[3]; // e.g., "5"
+            let trainIconUrl;
+
+            if (trainNumber) {
+                // If the train number is present, include it in the URL
+                trainIconUrl = `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg`;
+            } else {
+                // If the train number is not present, just use the train type
+                trainIconUrl = `https://icons.app.sbb.ch/icons/${trainType}.svg`;
+            }
+
             const trainIcon = document.createElement('img');
-            trainIcon.src = '/static/assets/train.svg';
-            trainIcon.alt = 'Train Icon';
-
-            const trainName = document.createElement('span');
-            trainName.textContent = `${item[2]} ${item[3]}`;
-
-            trainInfo.appendChild(trainIcon);
-            trainInfo.appendChild(trainName);
+            trainIcon.src = trainIconUrl;
+            trainIcon.alt = `${item[2]} ${item[3]}`; // alt text as train name, e.g., "RE 5"
+            trainIcon.classList.add('train-icon'); // Larger size
 
             const trainTimes = document.createElement('div');
             trainTimes.classList.add('train-times');
@@ -137,6 +170,8 @@ document.addEventListener('DOMContentLoaded', function () {
             trainTimes.appendChild(arrivalWithout);
             trainTimes.appendChild(arrivalWith);
 
+            trainInfo.appendChild(trainSvg); // Append the train SVG icon first
+            trainInfo.appendChild(trainIcon); // Then append the specific train icon
             timeCell.appendChild(trainInfo);
             timeCell.appendChild(trainTimes);
             row.appendChild(timeCell);
