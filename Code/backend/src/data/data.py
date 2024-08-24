@@ -95,6 +95,7 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
                 connection_miss = []
 
+
                 for nearest_stop in nearest_stops:
                     old_stops = self.__get_connections(bhfs_id, nearest_stop[0], old_time, nearest_stop[1], OLD=True)
                     if old_stops == []:
@@ -111,6 +112,8 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
                             out_list[0] = f"{time[:2]}:{time[2:]}"
                             out_list.append(nearest_stop[1])
                             connection_miss.append(out_list)
+
+                print(connection_miss)
 
                 return_list.append((f"{old_time[:2]}:{old_time[2:]}",
                                     f"{new_time[:2]}:{new_time[2:]}",
@@ -194,9 +197,14 @@ left join gleis using(gleis_id)
 
 where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = {to_stop_id}"""
 
+
         if OLD:
+            print("old")
+            print(query)
             return self.__get_data_old(query)
         else:
+            print("new")
+            print(query)
             return self.__get_data_new(query)
 
 
