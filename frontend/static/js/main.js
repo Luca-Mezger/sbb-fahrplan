@@ -2,49 +2,76 @@ document.addEventListener('DOMContentLoaded', function () {
     const bahnhofSuche = document.getElementById('bahnhof-suche');
     const searchButton = document.getElementById('search-button');
     const suggestionsList = document.getElementById('suggestions');
+    const datePicker = document.getElementById('date-picker');
 
-    let names = [];
+    let stations = [];
     let filteredNames = [];
 
-    // Fetch the list of station names from the backend
+    // fetch the list of station names and ids from the backend
     fetch('/bhfs')
         .then(response => response.json())
         .then(data => {
-            // Extract the names from the JSON data
-            names = data.map(station => station[1]);
+            // store the data as a list of objects with id and name
+            stations = data.map(station => ({
+                id: station[0],
+                name: station[1]
+            }));
         });
 
-    // Filter names based on the search query
+    // filter names based on search query
     bahnhofSuche.addEventListener('input', function () {
         const query = bahnhofSuche.value.toLowerCase();
-        filteredNames = names.filter(name => name.toLowerCase().includes(query));
-        displaySuggestions(query);
+        filteredNames = stations.filter(station => station.name.toLowerCase().includes(query));
+        displaySuggestions();
     });
 
-    // Display the filtered suggestions in the dropdown
-    function displaySuggestions(query) {
+    // display filtered suggestions
+    function displaySuggestions() {
         suggestionsList.innerHTML = '';
-        if (query && filteredNames.length > 0) {
-            filteredNames.forEach(name => {
-                const listItem = document.createElement('li');
-                listItem.textContent = name;
-                listItem.addEventListener('click', function () {
-                    bahnhofSuche.value = name;
-                    suggestionsList.innerHTML = '';
-                });
-                suggestionsList.appendChild(listItem);
+        filteredNames.forEach(station => {
+            const listItem = document.createElement('li');
+            listItem.textContent = station.name;
+            listItem.addEventListener('click', function () {
+                bahnhofSuche.value = station.name;
+                suggestionsList.innerHTML = '';
             });
-        }
+            suggestionsList.appendChild(listItem);
+        });
     }
 
-    // Handle the search button click
+    // handle search button click
     searchButton.addEventListener('click', function () {
-        const query = bahnhofSuche.value.toLowerCase();
-        alert('Searching for: ' + query);
-        // Implement search functionality here if needed
+        const selectedName = bahnhofSuche.value;
+        const selectedDate = datePicker.value; // this will be in 'yyyy-mm-dd' format
+    
+        // find the station id by matching the selected name
+        const selectedStation = stations.find(station => station.name === selectedName);
+    
+        if (selectedStation && selectedDate) {
+            // send the request with the station id and date
+            const url = `/bhfs/${selectedDate}/${selectedStation.id}`;
+            fetch(url, {
+                method: 'POST', // or 'GET' depending on your flask route method
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ date: selectedDate }) // date is sent in the body as well
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('success:', data);
+                // handle the response as needed
+            })
+            .catch(error => {
+                console.error('error:', error);
+            });
+        } else {
+            alert('please select a valid station and date.');
+        }
     });
+    
 
-    // Slider and button click event listeners remain unchanged
+    // slider and button click event listeners remain unchanged
     var slider = document.getElementById('range-slider');
     var startTimeDisplay = document.getElementById('start-time-display');
     var endTimeDisplay = document.getElementById('end-time-display');
