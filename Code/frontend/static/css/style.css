@@ -318,6 +318,7 @@ footer {
     height: 40px;
     animation: spin 1s linear infinite;
     margin: 0 auto;
+    margin-top: 20px;
 }
 
 @keyframes spin {
