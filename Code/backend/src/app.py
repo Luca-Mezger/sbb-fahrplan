@@ -28,6 +28,18 @@ def agency():
     agency_list = data.get_agency() 
     return jsonify(agency_list) 
 
+# Define a route to get a list of new path to db
+@app.route("/new_db/")
+def new():
+    db_new = data.__get_data_new
+    return jsonify(db_new) 
+
+# Define a route to get a list of old path to db
+@app.route("/old_db/")
+def old():
+    db_old = data.__get_data_old
+    return jsonify(db_old) 
+
 # Define a route to get time differences for a specific train station on a given date
 @app.route("/bhfs/<date>/<id>")
 def dateId(date, id):
