@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let filteredNames = [];
     let allResults = [];
     let transportunternehmen = []; // To store fetched data
+    let selectedAgencyKuerzel = null; // Store selected agency Kürzel
 
     // Set date picker to today's date
     const today = new Date().toISOString().split('T')[0];
@@ -26,7 +27,70 @@ document.addEventListener('DOMContentLoaded', function () {
     // Hide time selection elements initially
     timeSelectionContainer.style.display = 'none';
 
-    // Toggle advanced settings
+    // Function to display a message when no results are found
+    function displayNoResults() {
+        resultsContainer.innerHTML = '';
+        const noResultsMessage = document.createElement('p');
+        noResultsMessage.textContent = 'Keine Unterbrüche gefunden.';
+        resultsContainer.appendChild(noResultsMessage);
+    }
+
+    // Parse time in 'HH:MM' format to minutes since midnight
+    function parseTime(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+    // Initialize time range slider
+    const slider = document.getElementById('range-slider');
+
+    noUiSlider.create(slider, {
+        start: [0, 24],
+        connect: true,
+        step: 1,
+        range: {
+            'min': 0,
+            'max': 24
+        },
+        format: {
+            to: function (value) {
+                if (value === 24) return '23:59'; // handle end of day
+                return ('0' + Math.floor(value)).slice(-2) + ":00"; // format time as HH:MM
+            },
+            from: function (value) {
+                if (value === '23:59') return 24;
+                return Number(value.replace(":00", "")); // convert time back to hours
+            }
+        }
+    });
+
+    // Update time display when slider values change
+    slider.noUiSlider.on('update', function (values, handle) {
+        console.log('Slider is updating:', values);  // Ensure slider is working
+        if (handle === 0) {
+            startTimeDisplay.textContent = values[0]; // update start time display
+        } else {
+            endTimeDisplay.textContent = values[1]; // update end time display
+        }
+    
+        filterAndDisplayResults();  // Safe to call here since slider is active
+    });
+
+    // Preset buttons for common time ranges
+    document.getElementById('morning-button').addEventListener('click', function () {
+        slider.noUiSlider.set([0, 12]);
+    });
+
+    document.getElementById('midday-button').addEventListener('click', function () {
+        slider.noUiSlider.set([10, 15]);
+    });
+
+    document.getElementById('evening-button').addEventListener('click', function () {
+        slider.noUiSlider.set([16, 24]);
+    });
+
+    resultsContainer.style.display = 'none'; // initially hide results container
+
     // Toggle advanced settings with smooth transition
     advancedSettingsToggle.addEventListener('click', function () {
         const isHidden = timeSelectionContainer.style.display === 'none';
@@ -64,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-
     // Fetch station names and ids from the backend
     fetch('/bhfs')
         .then(response => response.json())
@@ -88,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Filter station names based on search query
     bahnhofSuche.addEventListener('input', function () {
         function nameSorter(a, b) {
-            queryLength = query.length;
+            const queryLength = query.length;
 
             a = a.name;
             b = b.name;
@@ -146,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Filter transportunternehmen based on search query
     transportunternehmenSuche.addEventListener('input', function () {
         function nameSorter(a, b) {
-            queryLength = query.length;
+            const queryLength = query.length;
 
             a = a.displayName;
             b = b.displayName;
@@ -185,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function displayTransportunternehmenSuggestions(filteredTransportunternehmen) {
         transportunternehmenSuggestions.innerHTML = '';
-
+    
         if (filteredTransportunternehmen.length > 0) {
             transportunternehmenSuggestions.style.display = 'block';
             filteredTransportunternehmen.forEach(company => {
@@ -193,6 +256,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 listItem.textContent = company.displayName;
                 listItem.addEventListener('click', function () {
                     transportunternehmenSuche.value = company.displayName;
+                    selectedAgencyKuerzel = company.id;  // Store the selected Kürzel
+                    console.log('Selected Agency Kürzel:', selectedAgencyKuerzel);  // Debugging line
                     transportunternehmenSuggestions.innerHTML = '';
                     transportunternehmenSuggestions.style.display = 'none';
                 });
@@ -202,72 +267,93 @@ document.addEventListener('DOMContentLoaded', function () {
             transportunternehmenSuggestions.style.display = 'none';
         }
     }
-
+    
     // Handle search button click
     searchButton.addEventListener('click', function () {
         const selectedName = bahnhofSuche.value;
         const selectedDate = datePicker.value;
-        const selectedTransportCompany = transportunternehmenSuche.value;
-
-
+    
         const selectedStation = stations.find(station => station.name === selectedName);
-
+    
         if (selectedStation && selectedDate) {
             searchContainer.style.marginTop = '-15px';
             resultsContainer.style.display = 'none'; // Hide results container initially
             loadingSpinner.style.display = 'block';  // Show the spinner
-
+    
             const url = `/bhfs/${selectedDate}/${selectedStation.id}`;
             fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    allResults = data.filter(result => {
-                        let passesFilter = true;
-                        if (selectedTransportCompany) passesFilter = passesFilter && result.company.toLowerCase() === selectedTransportCompany.toLowerCase();
-                        return passesFilter;
-                    });
-                    filterAndDisplayResults(); // display filtered results based on time range
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                })
-                .finally(() => {
-                    loadingSpinner.style.display = 'none';  // Hide the spinner
-                    resultsContainer.style.display = 'block'; // Show results container
+            .then(response => response.json())
+            .then(data => {
+                // Log each result to inspect its structure
+                data.forEach((result, index) => {
+                    console.log(`Result ${index}:`, result);
                 });
+        
+                // Now apply filtering
+                allResults = data;
+        
+                filterAndDisplayResults(); // Display filtered results based on time range
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                loadingSpinner.style.display = 'none';  // Hide the spinner
+                resultsContainer.style.display = 'block'; // Show results container
+            });
+        
+        
         } else {
             alert('Please select a valid station and date.');
         }
     });
 
-
-
     function filterAndDisplayResults() {
-        const [startTime, endTime] = slider.noUiSlider.get();
-        const start = parseTime(startTime);
-        const end = parseTime(endTime);
-
-        const filteredResults = allResults.filter(item => {
-            const arrivalTime = parseTime(item[0]);
-            return arrivalTime >= start && arrivalTime <= end;
-        });
-
-        // Sort the filtered results by arrival time (item[0])
-        filteredResults.sort((a, b) => parseTime(a[0]) - parseTime(b[0]));
-
-        if (filteredResults.length === 0) {
+        // Ensure start and end times are defined correctly before filtering
+        const [startTime, endTime] = slider.noUiSlider.get(); // Retrieve time range from slider
+        const start = parseTime(startTime); // Convert start time to minutes since midnight
+        const end = parseTime(endTime); // Convert end time to minutes since midnight
+    
+        console.log('Start time:', start); // Debugging: log start time
+        console.log('End time:', end); // Debugging: log end time
+    
+        // Ensure allResults is correctly populated before filtering
+        if (allResults.length === 0) {
+            console.log('No results to filter');
             displayNoResults();
+            return;
+        }
+    
+        const filteredResults = allResults.filter(item => {
+            const arrivalTime = parseTime(item[0]); // Parse the arrival time of each item
+    
+            let passesFilter = arrivalTime >= start && arrivalTime <= end; // Check if it falls within the time range
+    
+            // Apply agency filter if an agency is selected
+            if (selectedAgencyKuerzel) {
+                const subItems = item[6]; // Assuming sub-items are in the 7th element (index 6)
+                if (Array.isArray(subItems)) {
+                    const subItemsMatchingAgency = subItems.some(subItem => {
+                        const company = subItem[4]; // Access the company value in sub-item
+                        return company && company.toLowerCase() === selectedAgencyKuerzel.toLowerCase();
+                    });
+                    passesFilter = passesFilter && subItemsMatchingAgency; // Combine filters
+                } else {
+                    passesFilter = false; // If sub-items are not an array, don't include this item
+                }
+            }
+    
+            return passesFilter; // Include item if it passes all filters
+        });
+    
+        console.log('Filtered Results:', filteredResults); // Log filtered results
+    
+        if (filteredResults.length === 0) {
+            displayNoResults(); // Display message if no results found
         } else {
-            displayResults(filteredResults);
+            displayResults(filteredResults); // Display the filtered results
         }
     }
-
-
-
-
-
-
-
 
     let agencyCache = {}; // Global cache for storing agency data
 
@@ -297,10 +383,6 @@ document.addEventListener('DOMContentLoaded', function () {
             populateResults(data, table);
         }
     }
-
-
-
-
 
     function populateResults(data, table) {
         data.forEach(item => {
@@ -335,14 +417,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const arrivalWithout = document.createElement('div');
             arrivalWithout.setAttribute('data-label', 'Alt:');
-            //fetch('http://127.0.0.1:5000/new_db').then(response => response.text()).then(text => arrivalWithout.setAttribute('data-label', `${text}:`));
             arrivalWithout.classList.add('time');
             arrivalWithout.textContent = item[0] || '-';
 
             const arrivalWith = document.createElement('div');
             arrivalWith.setAttribute('data-label', 'Neu:');
-            //fetch('http://127.0.0.1:5000/old_db').then(response => response.text()).then(text => arrivalWith.setAttribute('data-label', `${text}:`));
-
             arrivalWith.classList.add('time');
             arrivalWith.textContent = item[1] || '-';
 
@@ -436,105 +515,31 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsContainer.appendChild(table);
     }
 
-
-
-
-
-
-
-
-    function displayNoResults() {
-        resultsContainer.innerHTML = '';
-        const noResultsMessage = document.createElement('p');
-        noResultsMessage.textContent = 'Keine Unterbrüche gefunden.';
-        resultsContainer.appendChild(noResultsMessage);
+    // Function to set a single option in a dropdown from a given endpoint
+    function setDropdownOption(endpoint, dropdownId) {
+        fetch(endpoint)
+            .then(response => response.text()) // Expecting a single string response
+            .then(text => {
+                const dropdown = document.getElementById(dropdownId);
+                dropdown.innerHTML = ''; // Clear any existing options
+                const option = document.createElement('option');
+                option.value = text; // Set the option value to the fetched string
+                option.textContent = text; // Use the fetched string as the option label
+                dropdown.appendChild(option);
+            })
+            .catch(error => console.error('Error fetching dropdown data:', error));
     }
 
-    // Parse time in 'HH:MM' format to minutes since midnight
-    function parseTime(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours * 60 + minutes;
-    }
+    // Get the base URL dynamically
+    const baseUrl = window.location.origin;
 
-    // Initialize time range slider
-    var slider = document.getElementById('range-slider');
+    // Construct the endpoint URLs dynamically
+    const newDbUrl = `${baseUrl}/new_db`;
+    const oldDbUrl = `${baseUrl}/old_db`;
 
-    noUiSlider.create(slider, {
-        start: [0, 24],
-        connect: true,
-        step: 1,
-        range: {
-            'min': 0,
-            'max': 24
-        },
-        format: {
-            to: function (value) {
-                if (value === 24) return '23:59'; // handle end of day
-                return ('0' + Math.floor(value)).slice(-2) + ":00"; // format time as HH:MM
-            },
-            from: function (value) {
-                if (value === '23:59') return 24;
-                return Number(value.replace(":00", "")); // convert time back to hours
-            }
-        }
-    });
+    // Set the option for the "Neuer Fahrplan" dropdown
+    setDropdownOption(newDbUrl, 'neuer-fahrplan-dropdown');
 
-    // Update time display when slider values change
-    slider.noUiSlider.on('update', function (values, handle) {
-        if (handle === 0) {
-            startTimeDisplay.textContent = values[0]; // update start time display
-        } else {
-            endTimeDisplay.textContent = values[1]; // update end time display
-        }
-
-        filterAndDisplayResults(); // update results based on the selected time range
-    });
-
-    // Preset buttons for common time ranges
-    document.getElementById('morning-button').addEventListener('click', function () {
-        slider.noUiSlider.set([0, 12]);
-    });
-
-    document.getElementById('midday-button').addEventListener('click', function () {
-        slider.noUiSlider.set([10, 15]);
-    });
-
-    document.getElementById('evening-button').addEventListener('click', function () {
-        slider.noUiSlider.set([16, 24]);
-    });
-
-    resultsContainer.style.display = 'none'; // initially hide results container
+    // Set the option for the "Alter Fahrplan" dropdown
+    setDropdownOption(oldDbUrl, 'alter-fahrplan-dropdown');
 });
-
-
-// Function to set a single option in a dropdown from a given endpoint
-function setDropdownOption(endpoint, dropdownId) {
-    fetch(endpoint)
-        .then(response => response.text()) // Expecting a single string response
-        .then(text => {
-            const dropdown = document.getElementById(dropdownId);
-            dropdown.innerHTML = ''; // Clear any existing options
-            const option = document.createElement('option');
-            option.value = text; // Set the option value to the fetched string
-            option.textContent = text; // Use the fetched string as the option label
-            dropdown.appendChild(option);
-        })
-        .catch(error => console.error('Error fetching dropdown data:', error));
-}
-
-// Get the base URL dynamically
-const baseUrl = window.location.origin;
-
-// Construct the endpoint URLs dynamically
-const newDbUrl = `${baseUrl}/new_db`;
-const oldDbUrl = `${baseUrl}/old_db`;
-
-// Set the option for the "Neuer Fahrplan" dropdown
-setDropdownOption(newDbUrl, 'neuer-fahrplan-dropdown');
-
-// Set the option for the "Alter Fahrplan" dropdown
-setDropdownOption(oldDbUrl, 'alter-fahrplan-dropdown');
-
-
-
-

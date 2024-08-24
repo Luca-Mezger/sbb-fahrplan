@@ -282,7 +282,7 @@ header .language-flag img {
 
 .train-times div::before {
     content: attr(data-label);
-    flex: 1 0 150px;
+    flex: 1 0 50px;
     text-align: left;
     padding-right: 10px;
 }
