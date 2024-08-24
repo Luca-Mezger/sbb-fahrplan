@@ -1,14 +1,15 @@
 import sqlite3 as sq
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Data():
 
     OLD_PATH = "../data/hrdf_2024-01-03.sqlite"
 #    OLD_PATH = "../data/hrdf_2024-02-21.sqlite"
-    NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
-#    NEW_PATH = "../data/hrdf_2024-08-14.sqlite"
+#    NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
+    NEW_PATH = "../data/hrdf_2024-08-14.sqlite"
 
     SBB_DATE = datetime(2023, 12, 10)
+    SEARCH_TIME_WINDOW = 29
 
     def __init__(self,):
         pass
@@ -25,7 +26,7 @@ class Data():
 
         return self.__get_data_old("SELECT agency_id, full_name_de, long_name from agency")
 
-    def get_time_diffs_bhf(self, bhfs_id, date):
+    def get_time_diffs_bhf(self, bhfs_id, date, agency_id=11):
         """Return a list of delayes
         """
 
@@ -37,15 +38,18 @@ group_concat(fplan_stop_times.fplan_trip_bitfeld_id) AS trip_bitfield_id,
 group_concat(fplan_stop_times.stop_arrival) AS stop_arrs,
 fplan.fplan_trip_id,
 fplan.vehicle_type,
-fplan.service_line
+fplan.service_line,
+gleis.track_full_text
 
-FROM fplan, fplan_trip_bitfeld, calendar, fplan_stop_times WHERE
-fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
+FROM fplan, fplan_trip_bitfeld, calendar, fplan_stop_times
+left join gleis using(gleis_id)
+WHERE fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
 AND fplan_trip_bitfeld.fplan_trip_bitfeld_id =
 fplan_stop_times.fplan_trip_bitfeld_id
 and fplan_stop_times.stop_id = "{bhfs_id}"
 AND fplan_trip_bitfeld.service_id = calendar.service_id
 AND SUBSTR(calendar.day_bits, {sbb_days}, 1) = "1" 
+AND agency_id = "{agency_id}"
 GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 ;
 """
@@ -67,22 +71,54 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
                     new_arr_dict[trip[1:]] = new_arr_dict[trip]
 
 
+        nearest_stops = self.__get_near_stops(bhfs_id)
+
         for trip in old_arr_dict.keys():
             if not trip in new_arr_dict.keys():
                 #capture trips which are not there during construction
-                print(f"old trip: {old_arr_dict[trip]}")
+                #print(f"old trip: {old_arr_dict[trip]}")
                 continue
             if old_arr_dict[trip][1]  != new_arr_dict[trip][1]:
-                old_time = old_arr_dict[trip][1]
-                new_time = new_arr_dict[trip][1]
+                old_time = self.__24h_swap(old_arr_dict[trip][1])
+                new_time = self.__24h_swap(new_arr_dict[trip][1])
+
+                connection_miss = []
+
+                for nearest_stop in nearest_stops:
+                    old_stops = self.__get_connections(bhfs_id, nearest_stop[0], old_time, nearest_stop[1], OLD=True)
+                    if old_stops == []:
+                        continue
+                    new_stops = self.__get_connections(bhfs_id, nearest_stop[0], new_time, nearest_stop[1], OLD=False)
+
+                    old_stops_dict = {stop[5]: stop for stop in old_stops}
+                    new_stops_dict = {stop[5]: stop for stop in new_stops}
+
+                    for old_stop in old_stops_dict.keys():
+                        if not old_stop in new_stops_dict.keys():
+                            connection_miss.append(old_stops_dict[old_stop])
+
+
+#                    print(connection_miss)
+
 
                 return_list.append((f"{old_time[:2]}:{old_time[2:]}",
                                     f"{new_time[:2]}:{new_time[2:]}",
                                     old_arr_dict[trip][3],
-                                    old_arr_dict[trip][4]))
+                                    old_arr_dict[trip][4],
+                                    old_arr_dict[trip][2],
+                                    old_arr_dict[trip][5],
+                                    connection_miss))
+
 
         return return_list
 
+
+    def __24h_swap(self, time_string):
+        hours = int(time_string[:2])
+        if hours > 23:
+            time_string = f"{hours-24}{time_string[2:]}"
+
+        return time_string
 
     def __get_data_old(self, statment):
         db = sq.connect(self.OLD_PATH)
@@ -107,13 +143,54 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
         """returns walkable stops from bhfs in list with sublists (stop_id, walktime)
         """
 
-        return self.get_data_old(f"""select from_stop_id, walk_minutes from stop_relations where to_stop_id="{bhfs_id}"; """)
+        return self.__get_data_old(f"""select from_stop_id, walk_minutes from stop_relations where to_stop_id="{bhfs_id}"; """)
 
-    def __get_connctions(self, stop_id, earliest_time):
-        pass
+    def __get_connections(self, from_stop_id, to_stop_id, arr_time, walk_time, OLD=True):
+        arr_time = datetime.strptime(arr_time, "%H%M")
+        earliest_dep = arr_time + timedelta(minutes=walk_time)
+        last_dep = arr_time + timedelta(minutes=walk_time) + timedelta(minutes=self.SEARCH_TIME_WINDOW)
+
+        earliest_dep_string = earliest_dep.strftime("%H%M")
+        last_dep_string = last_dep.strftime("%H%M")
+
+        sql_time_search = f"(stop_departure glob '{earliest_dep_string[:3]}[{earliest_dep_string[3]}-9]'"
+        sql_time_search += f"or stop_departure glob '{last_dep_string[:3]}[0-{last_dep_string[3]}]'"
+
+        if earliest_dep_string[2] == last_dep_string[2]:
+            hours = earliest_dep_string[:2]
+            earliest_mins = earliest_dep_string[2]
+            last_mins = last_dep_string[2]
+            sql_time_search += f"or stop_departure glob '{hours}[{earliest_mins}-{last_mins}][0-9]]]'"
+        else:
+            hours_fix = earliest_dep_string[0]
+            hours_low = earliest_dep_string[1]
+            hours_high = last_dep_string[1]
+            earliest_mins = earliest_dep_string[2]
+            last_mins = last_dep_string[2]
+            sql_time_search += f"or stop_departure glob '{hours_fix}{hours_low}[{earliest_mins}-5][0-9]]]'"
+            sql_time_search += f"or stop_departure glob '{hours_fix}{hours_high}[0-{last_mins}][0-9]]]'"
+
+        sql_time_search += ")"
+
+        querry = f"""select fplan_stop_times.stop_departure, fplan.vehicle_type, fplan.service_line,
+gleis.track_full_text, fplan.agency_id,  fplan.fplan_trip_id
+
+from fplan_stop_times join fplan_trip_bitfeld USING(fplan_trip_bitfeld_id)
+join fplan on fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
+left join service_line USING(service_line_id)
+left join gleis using(gleis_id)
+
+where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = {to_stop_id}"""
+
+        if OLD:
+            return self.__get_data_old(querry)
+        else:
+            return self.__get_data_new(querry)
+
 
 
 if __name__ == "__main__":
     data = Data()
 
-    print(data.get_time_diffs_bhf("8507100", "2024-03-24"))
+    print(data.get_time_diffs_bhf("8507483", "2024-04-28")) #Fall 1
+#    print(data.get_time_diffs_bhf("8507100", "2024-03-05")) #Fall 2
