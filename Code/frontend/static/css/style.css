@@ -132,7 +132,7 @@ header .language-flag img {
     position: absolute;
     top: -20px;
     width: 100%;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .slider-display-container {
@@ -158,6 +158,11 @@ header .language-flag img {
 
 .noUi-horizontal {
     height: 8px;
+}
+
+.noUi-horizontal .noUi-handle{
+    width: 20px;
+    height: 20px;
 }
 
 .buttons-container {
@@ -216,7 +221,7 @@ header .language-flag img {
 
 .checkbox-container label {
     margin: 0 10px 0 0;
-    font-size: 14px;
+    font-size: 16px;
     color: #333;
     white-space: nowrap;
 }
@@ -289,7 +294,7 @@ header .language-flag img {
     align-items: flex-end;
     margin-right: auto !important;
     color: #555;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .train-times div {
@@ -335,7 +340,7 @@ footer {
     text-align: center;
     padding: 10px 0;
     width: 100%;
-    font-size: 14px;
+    font-size: 16px;
     position: relative;
     margin-top: 20px;
 }
@@ -360,7 +365,7 @@ footer {
 /* New Additions */
 .details-button {
     padding: 10px 15px;
-    font-size: 14px;
+    font-size: 16px;
     background-color: #fff;
     border: 1px solid #333;
     border-radius: 4px;
