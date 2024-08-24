@@ -72,7 +72,7 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
         old_arr_dict = {el[2]: el for el in old_arr_times if el[1] != ""}
         new_arr_dict = {el[2]: el for el in new_arr_times if el[1] != ""}
 
-        # return_list = []
+        return_list = []
 
         new_trip_list = list(new_arr_dict.keys())
 
@@ -106,10 +106,11 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
                     for old_stop in old_stops_dict.keys():
                         if not old_stop in new_stops_dict.keys():
-                            return_list = list(old_stops_dict[old_stop])
-                            time = self.__24h_swap(return_list[0])
-                            return_list[0] = f"{time[:2]}:{time[2:]}"
-                            connection_miss.append(return_list)
+                            out_list = list(old_stops_dict[old_stop])
+                            time = self.__24h_swap(out_list[0])
+                            out_list[0] = f"{time[:2]}:{time[2:]}"
+                            out_list.append(nearest_stop[1])
+                            connection_miss.append(out_list)
 
 #                    print(connection_miss)
 
@@ -205,8 +206,6 @@ where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = 
 
 if __name__ == "__main__":
     data = Data()
-    print(data.get_new_date())
-    print(data.get_old_date())
 
-#    print(data.get_time_diffs_bhf("8507483", "2024-04-28")) #Fall 1
+    print(data.get_time_diffs_bhf("8507483", "2024-04-28")) #Fall 1
 #    print(data.get_time_diffs_bhf("8507100", "2024-03-05")) #Fall 2
