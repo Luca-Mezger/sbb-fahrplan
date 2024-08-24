@@ -126,9 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedName = bahnhofSuche.value;
         const selectedDate = datePicker.value;
         const selectedTransportCompany = transportunternehmenSuche.value;
-        const filterBus = document.getElementById('filter-bus').checked;
-        const filterTram = document.getElementById('filter-tram').checked;
-        const filterShip = document.getElementById('filter-ship').checked;
+
 
         const selectedStation = stations.find(station => station.name === selectedName);
 
@@ -143,9 +141,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     allResults = data.filter(result => {
                         let passesFilter = true;
-                        if (filterBus) passesFilter = passesFilter && result.transportType === 'Bus';
-                        if (filterTram) passesFilter = passesFilter && result.transportType === 'Tram';
-                        if (filterShip) passesFilter = passesFilter && result.transportType === 'Ship';
                         if (selectedTransportCompany) passesFilter = passesFilter && result.company.toLowerCase() === selectedTransportCompany.toLowerCase();
                         return passesFilter;
                     });
@@ -164,33 +159,24 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
+
     function filterAndDisplayResults() {
-        const selectedTransportCompany = transportunternehmenSuche.value.trim();
-        let selectedKuerzel = '';
-    
-        // Extract the Kürzel from the company name if provided (e.g., "STI Bus AG (STI)" -> "STI")
-        if (selectedTransportCompany) {
-            const match = selectedTransportCompany.match(/\(([^)]+)\)/);
-            if (match) {
-                selectedKuerzel = match[1].toLowerCase();
-            }
-        }
-    
+        const [startTime, endTime] = slider.noUiSlider.get();
+        const start = parseTime(startTime);
+        const end = parseTime(endTime);
+
         const filteredResults = allResults.filter(item => {
-            // If there's a selected Kürzel, filter by it; otherwise, show all results
-            if (false) {
-                return item.kuerzel && item.kuerzel.toLowerCase() === selectedKuerzel;
-            } else {
-                return true; // No Kürzel specified, so include all results
-            }
+            const arrivalTime = parseTime(item[0]);
+            return arrivalTime >= start && arrivalTime <= end;
         });
-    
+
         if (filteredResults.length === 0) {
             displayNoResults();
         } else {
             displayResults(filteredResults);
         }
     }
+    
     
     
     
@@ -258,14 +244,14 @@ document.addEventListener('DOMContentLoaded', function () {
             trainTimes.classList.add('train-times');
     
             const arrivalWithout = document.createElement('div');
-            //arrivalWithout.setAttribute('data-label', 'Ankunft nach Zeitplan :');
-            fetch('http://127.0.0.1:5000/new_db').then(response => response.text()).then(text => arrivalWithout.setAttribute('data-label', `Zeitplan ${text}:`));
+            arrivalWithout.setAttribute('data-label', 'Ankunft nach Zeitplan :');
+            //fetch('http://127.0.0.1:5000/new_db').then(response => response.text()).then(text => arrivalWithout.setAttribute('data-label', `${text}:`));
             arrivalWithout.classList.add('time');
             arrivalWithout.textContent = item[0] || '-';
     
             const arrivalWith = document.createElement('div');
-            //arrivalWith.setAttribute('data-label', 'Ankunft nach Zeitplan :');
-            fetch('http://127.0.0.1:5000/old_db').then(response => response.text()).then(text => arrivalWith.setAttribute('data-label', `Zeitplan ${text}:`));
+            arrivalWith.setAttribute('data-label', 'Ankunft nach Zeitplan :');
+            //fetch('http://127.0.0.1:5000/old_db').then(response => response.text()).then(text => arrivalWith.setAttribute('data-label', `${text}:`));
 
             arrivalWith.classList.add('time');
             arrivalWith.textContent = item[1] || '-';
