@@ -3,6 +3,8 @@ from flask import Flask, render_template, jsonify
 # Import Data class from data module
 from data.data import Data
 
+import sys
+
 # Create a Flask application instance
 app = Flask(__name__,
             template_folder='../../frontend/templates', 
@@ -43,7 +45,9 @@ def old():
 # Define a route to get time differences for a specific train station on a given date
 @app.route("/bhfs/<date>/<id>")
 def dateId(date, id):
-    dateId_list = data.get_time_diffs_bhf(id, date) 
+    dateId_list = data.get_time_diffs_bhf(id, date)
+    print("hi", file=sys.stderr) 
+    print(dateId_list, file=sys.stderr) 
     return dateId_list
 
 # Run the Flask application in debug mode

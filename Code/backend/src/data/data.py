@@ -102,32 +102,58 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
                         continue
                     new_stops = self.__get_connections(bhfs_id, nearest_stop[0], new_time, nearest_stop[1], OLD=False)
 
-                    old_stops_dict = {stop[5]: stop for stop in old_stops}
-                    new_stops_dict = {stop[5]: stop for stop in new_stops}
+                    old_stops_dict = {self.__fplan_shortening(stop[6]): stop for stop in old_stops}
+                    new_stops_dict = {self.__fplan_shortening(stop[6]): stop for stop in new_stops}
 
                     for old_stop in old_stops_dict.keys():
                         if not old_stop in new_stops_dict.keys():
                             out_list = list(old_stops_dict[old_stop])
+
+                            start_stop, end_stop = self.__fplan_first_last(out_list[6])
+
+                            out_list.pop(-1)
+
                             time = self.__24h_swap(out_list[0])
                             out_list[0] = f"{time[:2]}:{time[2:]}"
                             out_list.append(nearest_stop[1])
+                            out_list.append(start_stop)
+                            out_list.append(end_stop)
                             connection_miss.append(out_list)
 
-                print(connection_miss)
 
-                return_list.append((f"{old_time[:2]}:{old_time[2:]}",
+                element = (f"{old_time[:2]}:{old_time[2:]}",
                                     f"{new_time[:2]}:{new_time[2:]}",
                                     old_arr_dict[trip][3],
                                     old_arr_dict[trip][4],
                                     old_arr_dict[trip][2],
                                     old_arr_dict[trip][5],
-                                    connection_miss))
+                                    connection_miss)
 
+                if connection_miss == []:
+                    continue
+
+                return_list.append(element)
 
         return return_list
 
-# Compare old and new arrival times and store the differences
+    def __fplan_shortening(self, fplan_content):
+        col_list = fplan_content.split("\n")
 
+        string = ""
+        for col in col_list:
+            if col[0] != "*":
+                string += col
+
+        return string
+
+    def __fplan_first_last(self, fplan_content):
+        short = self.__fplan_shortening(fplan_content)
+
+        short_list = short.split("\n")
+        return short_list[0][8:29], short_list[-1][8:29]
+
+
+    # Compare old and new arrival times and store the differences
     def __24h_swap(self, time_string):
         hours = int(time_string[:2])
         if hours > 23:
@@ -188,7 +214,7 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
         sql_time_search += ")"
 
         query = f"""select fplan_stop_times.stop_departure, fplan.vehicle_type, fplan.service_line,
-gleis.track_full_text, fplan.agency_id,  fplan.fplan_trip_id
+gleis.track_full_text, fplan.agency_id,  fplan.fplan_trip_id, fplan.fplan_content
 
 from fplan_stop_times join fplan_trip_bitfeld USING(fplan_trip_bitfeld_id)
 join fplan on fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
@@ -199,12 +225,8 @@ where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = 
 
 
         if OLD:
-            print("old")
-            print(query)
             return self.__get_data_old(query)
         else:
-            print("new")
-            print(query)
             return self.__get_data_new(query)
 
 
@@ -213,4 +235,4 @@ if __name__ == "__main__":
     data = Data()
 
 #    print(data.get_time_diffs_bhf("8507000", "2024-09-14")) #Fall 1
-    print(data.get_time_diffs_bhf("8507100", "2024-04-28")) #Fall 2
+    data.get_time_diffs_bhf("8507483", "2024-04-28") #Fall 2
