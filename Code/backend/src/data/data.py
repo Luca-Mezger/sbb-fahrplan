@@ -27,6 +27,14 @@ class Data():
 
         return self.__get_data_old("SELECT agency_id, full_name_de, long_name from agency")
 
+    def get_old_date(self):
+        date = datetime.strptime(self.OLD_PATH, "../data/hrdf_%Y-%m-%d.sqlite")
+        return date.strftime("%d.%m.%Y")
+
+    def get_new_date(self):
+        date = datetime.strptime(self.NEW_PATH, "../data/hrdf_%Y-%m-%d.sqlite")
+        return date.strftime("%d.%m.%Y")
+
     def get_time_diffs_bhf(self, bhfs_id, date, agency_id=11):
         """Return a list of delayes
         """
@@ -98,8 +106,10 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
                     for old_stop in old_stops_dict.keys():
                         if not old_stop in new_stops_dict.keys():
-                            connection_miss.append(old_stops_dict[old_stop])
-
+                            return_list = list(old_stops_dict[old_stop])
+                            time = self.__24h_swap(return_list[0])
+                            return_list[0] = f"{time[:2]}:{time[2:]}"
+                            connection_miss.append(return_list)
 
 #                    print(connection_miss)
 
@@ -195,6 +205,8 @@ where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = 
 
 if __name__ == "__main__":
     data = Data()
+    print(data.get_new_date())
+    print(data.get_old_date())
 
-    print(data.get_time_diffs_bhf("8507483", "2024-04-28")) #Fall 1
+#    print(data.get_time_diffs_bhf("8507483", "2024-04-28")) #Fall 1
 #    print(data.get_time_diffs_bhf("8507100", "2024-03-05")) #Fall 2
