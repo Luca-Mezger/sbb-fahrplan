@@ -4,7 +4,9 @@ from datetime import datetime
 class Data():
 
     OLD_PATH = "../data/hrdf_2024-01-03.sqlite"
+#    OLD_PATH = "../data/hrdf_2024-02-21.sqlite"
     NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
+#    NEW_PATH = "../data/hrdf_2024-08-14.sqlite"
 
     SBB_DATE = datetime(2023, 12, 10)
 
@@ -32,7 +34,10 @@ class Data():
         querry = f"""
 SELECT
 group_concat(fplan_stop_times.fplan_trip_bitfeld_id) AS trip_bitfield_id,
-group_concat(fplan_stop_times.stop_arrival) AS stop_arrs
+group_concat(fplan_stop_times.stop_arrival) AS stop_arrs,
+fplan.fplan_trip_id,
+fplan.vehicle_type,
+fplan.service_line,
 
 FROM fplan, fplan_trip_bitfeld, calendar, fplan_stop_times WHERE
 fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
@@ -49,20 +54,43 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
         new_arr_times = self.__get_data_new(querry)
 
 
-        old_arr_dict = {el[0]: el[1] for el in old_arr_times if el[1] != ""}
-        new_arr_dict = {el[0]: el[1] for el in new_arr_times if el[1] != ""}
+        old_arr_dict = {el[2]: el for el in old_arr_times if el[1] != ""}
+        new_arr_dict = {el[2]: el for el in new_arr_times if el[1] != ""}
 
         return_list = []
 
+
+        for trip in new_arr_dict.keys():
+            if not trip in old_arr_dict.keys():
+                print(new_arr_dict[trip])
+
         for trip in old_arr_dict.keys():
-            if not trip in new_arr_dict:
+            if not trip in new_arr_dict.keys():
+                print(old_arr_dict[trip])
                 continue
-            if old_arr_dict[trip]  != new_arr_dict[trip]:
-                old_time = old_arr_dict[trip]
-                new_time = new_arr_dict[trip]
+            if old_arr_dict[trip][1]  != new_arr_dict[trip][1]:
+                old_time = old_arr_dict[trip][1]
+                new_time = new_arr_dict[trip][1]
+
+                print("break")
+                print(new_arr_dict[trip][0])
+                print(new_arr_dict[trip][1])
+                print(new_arr_dict[trip][2])
+                print(new_arr_dict[trip][3])
+                print(new_arr_dict[trip][4])
+
+                print(old_arr_dict[trip][0])
+                print(old_arr_dict[trip][1])
+                print(old_arr_dict[trip][2])
+                print(old_arr_dict[trip][3])
+                print(old_arr_dict[trip][4])
+
+                print()
 
                 return_list.append((f"{old_time[:2]}:{old_time[2:]}",
-                                    f"{new_time[:2]}:{new_time[2:]}"))
+                                    f"{new_time[:2]}:{new_time[2:]}",
+                                    old_arr_dict[trip][3],
+                                    old_arr_dict[trip][4]))
 
         return return_list
 
@@ -86,8 +114,17 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
         return (date - self.SBB_DATE).days
 
+    def __get_near_stops(self, bhfs_id):
+        """returns walkable stops from bhfs in list with sublists (stop_id, walktime)
+        """
+
+        return self.get_data_old(f"""select from_stop_id, walk_minutes from stop_relations where to_stop_id="{bhfs_id}"; """)
+
+    def __get_connctions(self, stop_id, earliest_time):
+        pass
+
 
 if __name__ == "__main__":
     data = Data()
 
-    print(data.get_time_diffs_bhf("8507100", "2024-06-26"))
+    print(data.get_time_diffs_bhf("8507100", "2024-03-24"))
