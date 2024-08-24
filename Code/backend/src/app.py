@@ -7,28 +7,28 @@ import sys
 
 # Create a Flask application instance
 app = Flask(__name__,
-            template_folder='../../frontend/templates', 
-            static_folder='../../frontend/static')     
+            template_folder='../../frontend/templates',
+            static_folder='../../frontend/static')
 
 # Instance Data class
 data = Data()
 
-# Define a route for the home page 
+# Define a route for the home page
 @app.route("/")
 def home():
-    return render_template('index.html') 
+    return render_template('index.html')
 
 # Define a route to get a list of train stations
 @app.route("/bhfs")
 def bhfs():
-    bhfs_list = data.get_bhfs() 
-    return jsonify(bhfs_list)   
+    bhfs_list = data.get_bhfs()
+    return jsonify(bhfs_list)
 
 # Define a route to get a list of agencies
 @app.route("/agency")
 def agency():
-    agency_list = data.get_agency() 
-    return jsonify(agency_list) 
+    agency_list = data.get_agency()
+    return jsonify(agency_list)
 
 # Define a route to get a list of new path to db
 @app.route("/new_db")
