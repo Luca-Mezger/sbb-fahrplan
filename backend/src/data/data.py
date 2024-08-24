@@ -90,4 +90,4 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 if __name__ == "__main__":
     data = Data()
 
-    print(data.get_time_diffs_bhf("8507100", "2023-06-26"))
+    print(data.get_time_diffs_bhf("8507100", "2024-06-26"))
