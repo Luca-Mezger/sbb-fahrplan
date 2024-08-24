@@ -59,33 +59,22 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
 
         return_list = []
 
+        new_trip_list = list(new_arr_dict.keys())
 
-        for trip in new_arr_dict.keys():
+        for trip in new_trip_list:
             if not trip in old_arr_dict.keys():
-                print(new_arr_dict[trip])
+                if len(trip) == 5 and trip[0] in ["1", "3"]:
+                    new_arr_dict[trip[1:]] = new_arr_dict[trip]
+
 
         for trip in old_arr_dict.keys():
             if not trip in new_arr_dict.keys():
-                print(old_arr_dict[trip])
+                #capture trips which are not there during construction
+                print(f"old trip: {old_arr_dict[trip]}")
                 continue
             if old_arr_dict[trip][1]  != new_arr_dict[trip][1]:
                 old_time = old_arr_dict[trip][1]
                 new_time = new_arr_dict[trip][1]
-
-                print("break")
-                print(new_arr_dict[trip][0])
-                print(new_arr_dict[trip][1])
-                print(new_arr_dict[trip][2])
-                print(new_arr_dict[trip][3])
-                print(new_arr_dict[trip][4])
-
-                print(old_arr_dict[trip][0])
-                print(old_arr_dict[trip][1])
-                print(old_arr_dict[trip][2])
-                print(old_arr_dict[trip][3])
-                print(old_arr_dict[trip][4])
-
-                print()
 
                 return_list.append((f"{old_time[:2]}:{old_time[2:]}",
                                     f"{new_time[:2]}:{new_time[2:]}",
