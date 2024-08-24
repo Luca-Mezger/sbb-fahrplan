@@ -29,8 +29,8 @@ header .language-flag img {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Center vertically */
-    align-items: center; /* Center horizontally */
+    justify-content: center;
+    align-items: center;
     padding: 20px;
     background-color: white;
     overflow-y: auto;
@@ -42,7 +42,7 @@ header .language-flag img {
     max-width: 600px;
     text-align: center;
     transition: margin-top 0.5s ease-in-out;
-    margin-top: 0; /* Center it vertically */
+    margin-top: 0;
 }
 
 .search-box {
@@ -55,20 +55,20 @@ header .language-flag img {
 
 .search-bar-container {
     display: flex;
-    align-items: center; /* Ensure all items are vertically aligned */
-    position: relative; /* Positioning context for the dropdown */
+    align-items: center;
+    position: relative;
     width: 100%;
 }
 
 #bahnhof-suche {
-    flex: 1; /* Allow the search bar to take up available space */
+    flex: 1;
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px 0 0 4px;
     outline: none;
     position: relative;
-    z-index: 1; /* Ensure it stays above other elements */
+    z-index: 1;
 }
 
 #search-button, .date-picker {
@@ -78,7 +78,7 @@ header .language-flag img {
     color: white;
     border: none;
     cursor: pointer;
-    height: 100%; /* Ensure they match the height of the search bar */
+    height: 100%;
 }
 
 #search-button {
@@ -102,12 +102,12 @@ header .language-flag img {
     background-color: white;
     border-radius: 0 0 4px 4px;
     position: absolute;
-    top: 100%; /* Position it directly below the input field */
+    top: 100%;
     left: 0;
     right: 0;
     z-index: 2;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    display: none; /* Hide by default */
+    display: none;
 }
 
 .suggestions-dropdown li {
@@ -187,7 +187,7 @@ header .language-flag img {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     max-width: 600px;
     width: 100%;
-    display: block; /* Show the container */
+    display: block;
     margin-top: 20px;
     font-family: 'Arial', sans-serif;
 }
@@ -195,7 +195,7 @@ header .language-flag img {
 .results-table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 10px; /* Space between rows */
+    border-spacing: 0 10px;
 }
 
 .results-table tr {
@@ -210,9 +210,9 @@ header .language-flag img {
     font-size: 16px;
     color: #333;
     display: grid;
-    grid-template-columns: auto 1fr; /* Define two columns: one for the icon/name, one for the times */
-    grid-gap: 10px; /* Space between the icon/name and times */
-    align-items: center; /* Align items vertically centered */
+    grid-template-columns: auto 1fr;
+    grid-gap: 10px;
+    align-items: center;
 }
 
 .results-table td img {
@@ -225,15 +225,15 @@ header .language-flag img {
     display: flex;
     align-items: center;
     font-weight: bold;
-    color: #EB0000; /* Train name color */
+    color: #EB0000;
 }
 
 .train-times {
-    color: #555; /* Time color */
+    color: #555;
     font-size: 14px;
     display: flex;
-    flex-direction: column; /* Stack the times vertically */
-    align-items: flex-start; /* Align text to the left */
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .train-times div {
@@ -244,15 +244,14 @@ header .language-flag img {
 
 .train-times div::before {
     content: attr(data-label);
-    flex: 1 0 150px; /* Adjust this width to align the text properly */
+    flex: 1 0 150px;
     text-align: left;
-    padding-right: 10px; /* Space between the label and the time */
+    padding-right: 10px;
 }
 
 .train-times .time {
     flex-shrink: 0;
 }
-
 
 .results-table tr:hover {
     background-color: #f1f1f1;
