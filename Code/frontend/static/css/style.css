@@ -370,13 +370,13 @@ footer {
 
 .dropdown-content {
     width: 100%; /* Full width */
-    background-color: #f9f9f9;
+    background-color: #fff;
     padding: 15px;
     max-width: 570px;
-    border-radius: 8px;
+    /*border-radius: 8px;*/
     display: none; /* Initially hidden */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 10px; /* Add space between the button and dropdown */
+    /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+    /*margin-top: 10px;  */
     grid-column: 1 / -1; /* Ensure it spans the full width of the container */
 }
 
@@ -386,8 +386,8 @@ footer {
     align-items: center;
     padding: 10px;
     background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /*border-radius: 8px;*/
+    /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
 }
 
 .train-times-button-container {

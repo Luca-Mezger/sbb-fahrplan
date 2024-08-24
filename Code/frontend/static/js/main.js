@@ -181,9 +181,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-
     let agencyCache = {}; // Global cache for storing agency data
 
+    // Function to fetch agencies and update cache
     function fetchAndCacheAgencies() {
         return fetch('/agency')
             .then(response => response.json())
@@ -195,12 +195,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 agencyCache = newCache; // Replace the old cache with the new one
             });
     }
-    
+
+    // Function to display results
     function displayResults(data) {
         resultsContainer.innerHTML = '';
         const table = document.createElement('table');
         table.classList.add('results-table');
-    
+
         // Check if we need to fetch the agencies
         if (Object.keys(agencyCache).length === 0) {
             fetchAndCacheAgencies().then(() => populateResults(data, table));
@@ -208,62 +209,80 @@ document.addEventListener('DOMContentLoaded', function () {
             populateResults(data, table);
         }
     }
-    
+
+    function parseTime(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+
     function populateResults(data, table) {
+        // Parse and sort the data array by 'Ankunft ohne Baustelle' (item[0]) or 'Ankunft mit Baustelle' (item[1])
+        data.sort((a, b) => {
+            const timeA = parseTime(a[0]); // Use a[1] if you want to sort by 'Ankunft mit Baustelle'
+            const timeB = parseTime(b[0]); // Use b[1] if you want to sort by 'Ankunft mit Baustelle'
+            return timeA - timeB;
+        });
+
         data.forEach(item => {
             const row = document.createElement('tr');
-            const timeCell = document.createElement('td');
-    
             const resultItem = document.createElement('div');
             resultItem.classList.add('result-item');
-    
+
             const trainInfo = document.createElement('div');
             trainInfo.classList.add('train-info');
-    
+
             const trainSvg = document.createElement('img');
             trainSvg.src = '/static/assets/train.svg';
             trainSvg.alt = 'Train Icon';
             trainSvg.classList.add('train-svg-icon');
-    
+
             const trainType = item[2].toLowerCase();
             const trainNumber = item[3];
-            let trainIconUrl = trainNumber ? `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg` : `https://icons.app.sbb.ch/icons/${trainType}.svg`;
-    
+            let trainIconUrl = trainNumber
+                ? `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg`
+                : `https://icons.app.sbb.ch/icons/${trainType}.svg`;
+
             const trainIcon = document.createElement('img');
             trainIcon.src = trainIconUrl;
             trainIcon.alt = `${item[2]} ${item[3]}`;
             trainIcon.classList.add('train-icon');
-    
+
             const trainTimesAndButton = document.createElement('div');
             trainTimesAndButton.classList.add('train-times-button-container');
-    
+
             const trainTimes = document.createElement('div');
             trainTimes.classList.add('train-times');
-    
+
             const arrivalWithout = document.createElement('div');
             arrivalWithout.setAttribute('data-label', 'Ankunft ohne Baustelle:');
             arrivalWithout.classList.add('time');
             arrivalWithout.textContent = item[0] || '-';
-    
+
             const arrivalWith = document.createElement('div');
             arrivalWith.setAttribute('data-label', 'Ankunft mit Baustelle:');
             arrivalWith.classList.add('time');
             arrivalWith.textContent = item[1] || '-';
-    
+
             trainTimes.appendChild(arrivalWithout);
             trainTimes.appendChild(arrivalWith);
-    
+
             const detailsButton = document.createElement('button');
-            detailsButton.textContent = 'Details';
+            detailsButton.textContent = 'Betroffenen Verbindungen';
             detailsButton.classList.add('details-button');
-    
+
             const dropdownContent = document.createElement('div');
             dropdownContent.classList.add('dropdown-content');
-    
+
+            // Add hr element here
+            const separator = document.createElement('hr');
+            separator.classList.add('result-separator');
+            separator.style.display = 'none'; // Initially hidden
+
             item[6].forEach(subItem => {
                 const detail = document.createElement('div');
                 detail.classList.add('transport-info');
-    
+
                 let iconUrl;
                 if (subItem[1] === 'B') {
                     iconUrl = 'https://icons.app.sbb.ch/icons/bus-profile-small.svg';
@@ -272,75 +291,74 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else if (subItem[1] === 'S') {
                     iconUrl = 'https://icons.app.sbb.ch/icons/boat-profile-small.svg';
                 }
-    
+
                 const transportIcon = document.createElement('img');
                 transportIcon.src = iconUrl;
                 transportIcon.alt = subItem[1];
                 transportIcon.classList.add('transport-icon');
-    
+
                 const agencyKuerzel = agencyCache[subItem[4]] || '-';
-    
+
                 const transportDetails = document.createElement('div');
                 transportDetails.style.display = 'flex';
                 transportDetails.style.alignItems = 'center';
-    
+
                 const kuerzelField = document.createElement('span');
                 kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
                 kuerzelField.style.marginRight = '10px';
-    
+
                 const abfahrtzeitField = document.createElement('span');
                 abfahrtzeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
                 abfahrtzeitField.style.marginRight = '20px';
                 abfahrtzeitField.style.marginLeft = '20px';
-    
+
                 const kanteField = document.createElement('span');
                 kanteField.innerHTML = `<strong>Kante:</strong><br>${subItem[3] || '-'}`;
                 kanteField.style.marginRight = '20px';
-    
+
                 const nrField = document.createElement('span');
                 nrField.innerHTML = `<strong>Nr.:</strong><br>${subItem[5] || '-'}`;
-    
+
                 transportDetails.appendChild(kuerzelField);
                 transportDetails.appendChild(transportIcon);
                 transportDetails.appendChild(abfahrtzeitField);
                 transportDetails.appendChild(kanteField);
                 transportDetails.appendChild(nrField);
-    
+
                 detail.appendChild(transportDetails);
                 dropdownContent.appendChild(detail);
             });
-    
+
             detailsButton.addEventListener('click', function () {
-                dropdownContent.style.display = dropdownContent.style.display === 'none' ? 'block' : 'none';
+                const isVisible = dropdownContent.style.display === 'block';
+                dropdownContent.style.display = isVisible ? 'none' : 'block';
+                separator.style.display = isVisible ? 'none' : 'block'; // Toggle hr visibility
             });
-    
+
             trainInfo.appendChild(trainSvg);
             trainInfo.appendChild(trainIcon);
             trainTimesAndButton.appendChild(trainTimes);
             trainTimesAndButton.appendChild(detailsButton);
-    
+
             resultItem.appendChild(trainInfo);
             resultItem.appendChild(trainTimesAndButton);
-    
+
             row.appendChild(resultItem);
+            row.appendChild(separator); // Append hr before dropdown content
             row.appendChild(dropdownContent);
             table.appendChild(row);
         });
-    
+
         resultsContainer.appendChild(table);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
 
     function displayNoResults() {
         resultsContainer.innerHTML = '';
@@ -367,11 +385,11 @@ document.addEventListener('DOMContentLoaded', function () {
             'max': 24
         },
         format: {
-            to: function(value) {
+            to: function (value) {
                 if (value === 24) return '23:59'; // handle end of day
                 return ('0' + Math.floor(value)).slice(-2) + ":00"; // format time as HH:MM
             },
-            from: function(value) {
+            from: function (value) {
                 if (value === '23:59') return 24;
                 return Number(value.replace(":00", "")); // convert time back to hours
             }
@@ -379,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Update time display when slider values change
-    slider.noUiSlider.on('update', function(values, handle) {
+    slider.noUiSlider.on('update', function (values, handle) {
         if (handle === 0) {
             startTimeDisplay.textContent = values[0]; // update start time display
         } else {
@@ -390,15 +408,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Preset buttons for common time ranges
-    document.getElementById('morning-button').addEventListener('click', function() {
+    document.getElementById('morning-button').addEventListener('click', function () {
         slider.noUiSlider.set([0, 12]);
     });
 
-    document.getElementById('midday-button').addEventListener('click', function() {
+    document.getElementById('midday-button').addEventListener('click', function () {
         slider.noUiSlider.set([10, 15]);
     });
 
-    document.getElementById('evening-button').addEventListener('click', function() {
+    document.getElementById('evening-button').addEventListener('click', function () {
         slider.noUiSlider.set([16, 24]);
     });
 
