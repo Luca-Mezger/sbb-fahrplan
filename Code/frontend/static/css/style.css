@@ -210,25 +210,7 @@ header .language-flag img {
     display: none;
 }
 
-/* Checkbox and Search Field Container */
-.checkbox-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 45px;
-    margin-bottom: 15px;
-}
 
-.checkbox-container label {
-    margin: 0 10px 0 0;
-    font-size: 16px;
-    color: #333;
-    white-space: nowrap;
-}
-
-.checkbox-container input[type="checkbox"] {
-    margin-right: 5px;
-}
 
 #transportunternehmen-suche {
     margin-left: 10px;
