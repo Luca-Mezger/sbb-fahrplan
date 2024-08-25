@@ -127,14 +127,18 @@ function getDateRange(startDate, endDate) {
 
     resultsContainer.style.display = 'none'; // initially hide results container
 
+    timeSelectionContainer.style.display = 'none';
+            timeSelectionContainer.style.height = '0px'; // Start with height 0
+            timeSelectionContainer.style.overflow = 'hidden'; // Hide overflow during the animation
     // Toggle advanced settings with smooth transition
     advancedSettingsToggle.addEventListener('click', function () {
         const isHidden = timeSelectionContainer.style.display === 'none';
+        
 
         if (isHidden) {
             timeSelectionContainer.style.display = 'block';
-            timeSelectionContainer.style.height = '0px'; // Start with height 0
-            timeSelectionContainer.style.overflow = 'hidden'; // Hide overflow during the animation
+           timeSelectionContainer.style.height = '0px'; // Start with height 0
+           timeSelectionContainer.style.overflow = 'hidden'; // Hide overflow during the animation
             toggleArrow.textContent = '▲'; // Change arrow direction
 
             // Trigger the height transition
