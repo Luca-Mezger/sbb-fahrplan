@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bahnhof Suche</title>
-    <link rel="icon" href="{{ url_for('static', filename='assets/favicon.png') }}" type="image/image/png">
+    <link rel="icon" href="static/assets/favicon.png" type="image/image/png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
     <header>
-        <img src="{{ url_for('static', filename='assets/logo.svg') }}" alt="Logo" class="logo">
+        <img src="static/assets/logo.svg" alt="Logo" class="logo">
         <div class="language-flag">
           <!-- TODO: add svg for flag-->
         </div>
@@ -20,14 +20,24 @@
         <div id="search-container">
             <div class="search-box" id="search-box">
                 <div class="search-bar-container">
-                    <div class="search-icon-container">
-                        <img src="https://icons.app.sbb.ch/icons/location-pin-small.svg" alt="Bahnhof Icon" class="search-icon">
-                    </div>
                     <input type="text" id="bahnhof-suche" placeholder="Bahnhof Suche" autocomplete="off">
                     <button id="search-button">Suchen</button>
                     <ul id="suggestions" class="suggestions-dropdown"></ul>
-                    <input type="date" id="date-picker" class="date-picker">
+                
+                    <!-- Checkbox to select date range -->
+                    <div class="date-selection">
+                        <input type="checkbox" id="date-range-toggle">
+                        <label for="date-range-toggle">Date Range</label>
+                    </div>
+                
+                    <div class="date-pickers-container">
+                        <input type="date" id="start-date-picker" class="date-picker">
+                        <input type="date" id="end-date-picker" class="date-picker" style="display: none;">
+                    </div>
+                    
+                    
                 </div>
+                
 
                 <div id="advanced-settings-toggle">
                     <span>Erweiterte Einstellungen <span id="toggle-arrow">▼</span></span>
@@ -53,22 +63,35 @@
                         <button id="midday-button" class="action-button">Mittag</button>
                         <button id="evening-button" class="action-button">Abend</button>
                     </div>
-                
 
-                
                     <!-- New search field for "Transportunternehmen" -->
                     <div class="search-bar-container">
                         <input type="text" id="transportunternehmen-suche" placeholder="Transportunternehmen" autocomplete="off">
                         <ul id="transportunternehmen-suggestions" class="suggestions-dropdown"></ul>
                     </div>
-                </div>
                 
+                    <!-- New dropdowns for "Neuer Fahrplan" and "Alter Fahrplan" in one container -->
+                    <div class="dropdowns-container">
+                        <div class="dropdown-container">
+                            <label for="neuer-fahrplan-dropdown">Neuer Fahrplan</label>
+                            <select id="neuer-fahrplan-dropdown">
+                                <!-- Option will be populated by JavaScript -->
+                            </select>
+                        </div>
+
+                        <div class="dropdown-container">
+                            <label for="alter-fahrplan-dropdown">Alter Fahrplan</label>
+                            <select id="alter-fahrplan-dropdown">
+                                <!-- Option will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="results-container" class="results-container"></div>
         <div id="loading-spinner" class="spinner" style="display: none;"></div>
-
     </div>
 
     <footer>
@@ -76,6 +99,7 @@
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="static/js/main.js"></script>
+
 </body>
 </html>
