@@ -1,3 +1,4 @@
+let allResults = [];
 document.addEventListener('DOMContentLoaded', function () {
     const bahnhofSuche = document.getElementById('bahnhof-suche');
     const searchButton = document.getElementById('search-button');
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let stations = [];
     let filteredNames = [];
-    let allResults = [];
+    
     let transportunternehmen = [];
     let selectedAgencyKuerzel = null;
 
@@ -126,14 +127,18 @@ function getDateRange(startDate, endDate) {
 
     resultsContainer.style.display = 'none'; // initially hide results container
 
+    timeSelectionContainer.style.display = 'none';
+            timeSelectionContainer.style.height = '0px'; // Start with height 0
+            timeSelectionContainer.style.overflow = 'hidden'; // Hide overflow during the animation
     // Toggle advanced settings with smooth transition
     advancedSettingsToggle.addEventListener('click', function () {
         const isHidden = timeSelectionContainer.style.display === 'none';
+        
 
         if (isHidden) {
             timeSelectionContainer.style.display = 'block';
-            timeSelectionContainer.style.height = '0px'; // Start with height 0
-            timeSelectionContainer.style.overflow = 'hidden'; // Hide overflow during the animation
+           timeSelectionContainer.style.height = '0px'; // Start with height 0
+           timeSelectionContainer.style.overflow = 'hidden'; // Hide overflow during the animation
             toggleArrow.textContent = '▲'; // Change arrow direction
 
             // Trigger the height transition
@@ -576,6 +581,7 @@ function populateResults(data, table) {
             const kuerzelField = document.createElement('span');
             kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
             kuerzelField.style.marginRight = '10px';
+            kuerzelField.style.width = '70px';
 
             const abfahrtzeitField = document.createElement('span');
             abfahrtzeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
@@ -676,4 +682,208 @@ function populateResults(data, table) {
 
     // Set the option for the "Alter Fahrplan" dropdown
     setDropdownOption(oldDbUrl, 'alter-fahrplan-dropdown');
+});
+
+
+document.getElementById('download-csv-button').addEventListener('click', function () {
+    if (allResults.length === 0) {
+        alert('No results available to download.');
+        return;
+    }
+
+    const headers = [
+        'Date',
+        'Time',
+        'Train Type',
+        'Train Number',
+        'Station',
+        'Additional Info',
+        'Level 1 Type',
+        'Level 1 Detail 1',
+        'Level 1 Detail 2',
+        'Level 1 Detail 3',
+        'Level 1 Detail 4',
+        'Level 1 Detail 5',
+        'Level 2 Type',
+        'Level 2 Detail 1',
+        'Level 2 Detail 2',
+        // Add more headers as needed to accommodate deeper levels
+    ];
+    const csvRows = [];
+
+    // Add the headers row
+    csvRows.push(headers.join(','));
+
+    // Recursive function to flatten nested structures
+    function flattenItem(item, levelPrefix) {
+        let flatItem = [];
+
+        // Base details from the primary level
+        flatItem.push(
+            item[0] || '-',  // Date
+            item[1] || '-',  // Time
+            item[2] || '-',  // Train Type
+            item[3] || '-',  // Train Number
+            item[4] || '-',  // Station
+            item[5] || '-'   // Additional Info
+        );
+
+        // Loop through the nested lists
+        if (Array.isArray(item[6])) {
+            item[6].forEach(subItem => {
+                let subFlat = [];
+                subFlat.push(
+                    subItem[1] || '-',  // Sub-Transport Type
+                    subItem[0] || '-',  // Sub-Transport Departure Time
+                    subItem[3] || '-',  // Sub-Transport Platform
+                    subItem[5] || '-',  // Sub-Transport Number
+                    subItem[4] || '-'   // Sub-Transport Company
+                );
+
+                // If there are deeper nested sub-items, flatten them too
+                if (Array.isArray(subItem[6])) {
+                    subItem[6].forEach(deeperSubItem => {
+                        let deeperSubFlat = [
+                            deeperSubItem[0] || '-',  // Deeper Sub-Transport Detail 1
+                            deeperSubItem[1] || '-',  // Deeper Sub-Transport Detail 2
+                            // Add more as needed...
+                        ];
+
+                        // Concatenate all levels together
+                        csvRows.push(flatItem.concat(subFlat, deeperSubFlat).join(','));
+                    });
+                } else {
+                    // No deeper levels, just push the flat result
+                    csvRows.push(flatItem.concat(subFlat).join(','));
+                }
+            });
+        } else {
+            // No nested lists, just push the flat result
+            csvRows.push(flatItem.join(','));
+        }
+    }
+
+    // Process each result in `allResults`
+    allResults.forEach(item => {
+        flattenItem(item);
+    });
+
+    // Create a CSV string
+    const csvContent = csvRows.join('\n');
+
+    // Create a Blob and a URL for it
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    // Create a temporary link element
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'results.csv';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+
+    // Trigger the download
+    a.click();
+
+    // Clean up the URL and remove the link element
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+});
+
+
+
+
+document.getElementById('download-excel-button').addEventListener('click', function () {
+    if (allResults.length === 0) {
+        alert('No results available to download.');
+        return;
+    }
+
+    const headers = [
+        'Date',
+        'Time',
+        'Train Type',
+        'Train Number',
+        'Station',
+        'Additional Info',
+        'Level 1 Type',
+        'Level 1 Detail 1',
+        'Level 1 Detail 2',
+        'Level 1 Detail 3',
+        'Level 1 Detail 4',
+        'Level 1 Detail 5',
+        'Level 2 Type',
+        'Level 2 Detail 1',
+        'Level 2 Detail 2',
+        // Add more headers as needed to accommodate deeper levels
+    ];
+
+    const dataRows = [];
+
+    // Add the headers row
+    dataRows.push(headers);
+
+    // Recursive function to flatten nested structures
+    function flattenItem(item, levelPrefix) {
+        let flatItem = [];
+
+        // Base details from the primary level
+        flatItem.push(
+            item[0] || '-',  // Date
+            item[1] || '-',  // Time
+            item[2] || '-',  // Train Type
+            item[3] || '-',  // Train Number
+            item[4] || '-',  // Station
+            item[5] || '-'   // Additional Info
+        );
+
+        // Loop through the nested lists
+        if (Array.isArray(item[6])) {
+            item[6].forEach(subItem => {
+                let subFlat = [];
+                subFlat.push(
+                    subItem[1] || '-',  // Sub-Transport Type
+                    subItem[0] || '-',  // Sub-Transport Departure Time
+                    subItem[3] || '-',  // Sub-Transport Platform
+                    subItem[5] || '-',  // Sub-Transport Number
+                    subItem[4] || '-'   // Sub-Transport Company
+                );
+
+                // If there are deeper nested sub-items, flatten them too
+                if (Array.isArray(subItem[6])) {
+                    subItem[6].forEach(deeperSubItem => {
+                        let deeperSubFlat = [
+                            deeperSubItem[0] || '-',  // Deeper Sub-Transport Detail 1
+                            deeperSubItem[1] || '-',  // Deeper Sub-Transport Detail 2
+                            // Add more as needed...
+                        ];
+
+                        // Concatenate all levels together
+                        dataRows.push(flatItem.concat(subFlat, deeperSubFlat));
+                    });
+                } else {
+                    // No deeper levels, just push the flat result
+                    dataRows.push(flatItem.concat(subFlat));
+                }
+            });
+        } else {
+            // No nested lists, just push the flat result
+            dataRows.push(flatItem);
+        }
+    }
+
+    // Process each result in `allResults`
+    allResults.forEach(item => {
+        flattenItem(item);
+    });
+
+    // Create a new workbook and a worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Results");
+
+    // Generate and download the Excel file
+    XLSX.writeFile(wb, 'results.xlsx');
 });
