@@ -119,16 +119,16 @@ class Data():
                 connection_miss = []
 
                 for nearest_stop in nearest_stops:
-                    old_stops = self.__get_connections(bhfs_id, nearest_stop[0], old_time, nearest_stop[1], OLD=True)
+                    old_stops = self.__get_connections(bhfs_id, nearest_stop[0], old_time, nearest_stop[1], sbb_days, OLD=True)
 
                     #if there were no connections in the old db, cancel this try
                     if old_stops == []:
                         continue
-                    new_stops = self.__get_connections(bhfs_id, nearest_stop[0], new_time, nearest_stop[1], OLD=False)
+                    new_stops = self.__get_connections(bhfs_id, nearest_stop[0], new_time, nearest_stop[1], sbb_days, OLD=False)
 
                     #convert list to dict for better filtering and mapping
-                    old_stops_dict = {self.__fplan_first_last(stop[6]): stop for stop in old_stops}
-                    new_stops_dict = {self.__fplan_first_last(stop[6]): stop for stop in new_stops}
+                    old_stops_dict = {self.__fplan_shortening(stop[6]): stop for stop in old_stops}
+                    new_stops_dict = {self.__fplan_shortening(stop[6]): stop for stop in new_stops}
 
                     #mapp the connections and search for broken connections
                     for old_stop in old_stops_dict.keys():
@@ -148,23 +148,21 @@ class Data():
                             connection_miss.append(out_list)
 
 
-                    #break if no connection broken
-                    if connection_miss == []:
-                        continue
+                #break if no connection broken
+                if connection_miss == []:
+                    continue
 
-                    print(connection_miss)
+                #prepare and ad an entry to the lists
+                element = (f"{old_time[:2]}:{old_time[2:]}",
+                           f"{new_time[:2]}:{new_time[2:]}",
+                           old_arr_dict[trip][3],
+                           old_arr_dict[trip][4],
+                           old_arr_dict[trip][2],
+                           old_arr_dict[trip][5],
+                           connection_miss,
+                           date)  # Add the date at the end of the main list
 
-                    #prepare and ad an entry to the lists
-                    element = (f"{old_time[:2]}:{old_time[2:]}",
-                                        f"{new_time[:2]}:{new_time[2:]}",
-                                        old_arr_dict[trip][3],
-                                        old_arr_dict[trip][4],
-                                        old_arr_dict[trip][2],
-                                        old_arr_dict[trip][5],
-                                        connection_miss,
-                                        date)  # Add the date at the end of the main list
-
-                    return_list.append(element)
+                return_list.append(element)
 
         return return_list
 
@@ -229,7 +227,7 @@ class Data():
 
         return self.__get_data_old(f"""select from_stop_id, walk_minutes from stop_relations where to_stop_id="{bhfs_id}"; """)
 
-    def __get_connections(self, from_stop_id, to_stop_id, arr_time, walk_time, OLD=True):
+    def __get_connections(self, from_stop_id, to_stop_id, arr_time, walk_time, sbb_days, OLD=True):
         """extract all connection from the stop with to_stop_id, walk_time after arr_time in a 29 minutes window
 
         since the time is saved in a string, the SQL glob function is used 3-4 times to extract the connections
@@ -272,19 +270,16 @@ gleis.track_full_text, fplan.agency_id,  fplan.fplan_trip_id, fplan.fplan_conten
 
 from fplan_stop_times join fplan_trip_bitfeld USING(fplan_trip_bitfeld_id)
 join fplan on fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
+JOIN calendar on fplan_trip_bitfeld.service_id = calendar.service_id
 left join service_line USING(service_line_id)
 left join gleis using(gleis_id)
 
-where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = {to_stop_id}"""
+where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = {to_stop_id}  and SUBSTR(calendar.day_bits, {sbb_days}, 1) = "1" """
 
         #extract from db in respect to the OL parameter
         if OLD:
- #           print("old")
- #          print(query) 
            return self.__get_data_old(query)
         else:
-#            print("new")
-#            print(query)
             return self.__get_data_new(query)
 
 
@@ -292,5 +287,5 @@ where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = 
 if __name__ == "__main__":
     data = Data()
 
-#    print(data.get_time_diffs_bhf("8507000", "2024-09-14")) #Fall 1
-    data.get_time_diffs_bhf("8507483", "2024-04-28") #Fall 2
+    data.get_time_diffs_bhf("8507000", "2024-09-14") #Fall 1
+#    data.get_time_diffs_bhf("8507483", "2024-04-28") #Fall 2
