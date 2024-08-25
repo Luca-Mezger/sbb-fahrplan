@@ -79,6 +79,7 @@ class Data():
     ;
     """
 
+
         #run query against both dbs
         old_arr_times = self.__get_data_old(query)
         new_arr_times = self.__get_data_new(query)
@@ -174,7 +175,7 @@ class Data():
         string = ""
         for col in col_list:
             if col[0] != "*":
-                string += f"{col}\n"
+                string += f"{col[:29]}\n"
 
         return string[:-1]
 
@@ -184,7 +185,7 @@ class Data():
         short = self.__fplan_shortening(fplan_content)
 
         short_list = short.split("\n")
-        return short_list[0][8:29], short_list[-1][8:29]
+        return short_list[0][8:], short_list[-1][8:]
 
 
     def __24h_swap(self, time_string):
