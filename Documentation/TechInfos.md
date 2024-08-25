@@ -4,14 +4,14 @@
 - [Code Repository](https://github.com/Luca-Mezger/sbb-fahrplan)
 
 ## Ausgangslage
-- **Projektziel**: Entwicklung einer Webanwendung zur Suche von Busverbindungen, die wegen Verspätungen des Zuges nicht effizient operieren. Viele Buslinien sind auf die eintreffenden Züge abgestimmt und vertrauen auf die Lieferung der Passagiere zur korrekten Zeit. Unsere Applikation hilf den Verkehrsunternehmen herauszufinden, wo es optimal wäre, eine Anschlussverbindung nach hinten zu verschieben.
-- **Ausgangslage**: sqlite Datenbanken
+- **Projektziel**: Entwicklung einer Webanwendung zur Suche von Busverbindungen, die wegen Verspätungen des Zuges nicht effizient operieren. Viele Buslinien sind auf die eintreffenden Züge abgestimmt und vertrauen auf die Lieferung der Passagiere zur korrekten Zeit. Unsere Applikation hilft den Verkehrsunternehmen herauszufinden, wo es optimal wäre, eine Anschlussverbindung nach hinten zu verschieben. Dies bringt für Endkunde enorme Vorteile mitsich. So kann zum Beispiel vermieden werden, dass man seinen letzten Bus verpasst (aufgrund der Verspätung des Zuges durch eine planbare Verspätung, z.B. Baustelle) und man am Bahnhof übernachten muss.
+- **Ausgangslage**: sqlite Datenbanken der SBB
 
 ### Fokus
 1. Analyse von Fahrplanänderungen
 2. Finden von Unterschieden in Ankunfts- und Abfahrtszeiten
 3. Anschlussverbindungen finden, die die verspäteten Züge verpassen würden    
-   --> graphische Darstellung für die Verkehrsunternehmen
+   --> funktionelle und ansprechende graphische Darstellung für die Verkehrsunternehmen
 
 ### Technische Grundsatzentscheide
 - **Webapp**: Von überall nutzbar
