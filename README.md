@@ -18,7 +18,7 @@ flask run --host=0.0.0.0 --port=8000
  2. Datumsrange auswählen
  3. Zeitrange auswählen (um z.B. nur die letzten Verbindungen am Tag zu checken)
  4. Transportunternehmen auswählen (dann werden nur die eigenen Verbindungen angezeigt)
- 5. 2 Vergleichsdatensätzen Auswählen
+ 5. 2 Vergleichsdatensätzen Auswählen   
     --> Resultate generieren mit dem "Such" Button
 
 ## Datenmodell 
