@@ -1,3 +1,4 @@
+let allResults = [];
 document.addEventListener('DOMContentLoaded', function () {
     const bahnhofSuche = document.getElementById('bahnhof-suche');
     const searchButton = document.getElementById('search-button');
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let stations = [];
     let filteredNames = [];
-    let allResults = [];
+    
     let transportunternehmen = [];
     let selectedAgencyKuerzel = null;
 
@@ -676,4 +677,145 @@ function populateResults(data, table) {
 
     // Set the option for the "Alter Fahrplan" dropdown
     setDropdownOption(oldDbUrl, 'alter-fahrplan-dropdown');
+});
+
+
+document.getElementById('download-csv-button').addEventListener('click', function () {
+    if (allResults.length === 0) {
+        alert('No results available to download.');
+        return;
+    }
+
+    const headers = [
+        'Date', 
+        'Time', 
+        'Train Type', 
+        'Train Number', 
+        'Station', 
+        'Additional Info', 
+        'Sub-Transport Type', 
+        'Sub-Transport Departure Time', 
+        'Sub-Transport Platform', 
+        'Sub-Transport Number', 
+        'Sub-Transport Company', 
+        'Walking Time'
+    ];
+    const csvRows = [];
+
+    // Add the headers row
+    csvRows.push(headers.join(','));
+
+    // Add the data rows
+    allResults.forEach(item => {
+        if (item.length < 8 || !Array.isArray(item[6])) {
+            console.warn('Skipping invalid item:', item);
+            return;
+        }
+
+        // Loop through each sub-item (e.g., busses) and create a CSV row for each
+        item[6].forEach(subItem => {
+            const row = [
+                item[0] || '-',  // Date (can be adjusted depending on your data structure)
+                item[1] || '-',  // Time
+                item[2] || '-',  // Train Type
+                item[3] || '-',  // Train Number
+                item[4] || '-',  // Station
+                item[5] || '-',  // Additional Info
+                subItem[1] || '-',  // Sub-Transport Type (e.g., Bus, Tram)
+                subItem[0] || '-',  // Sub-Transport Departure Time
+                subItem[3] || '-',  // Sub-Transport Platform
+                subItem[5] || '-',  // Sub-Transport Number
+                subItem[4] || '-',  // Sub-Transport Company
+                subItem[6] ? `${subItem[6]}'` : '-'  // Walking Time
+            ].join(',');
+
+            csvRows.push(row);
+        });
+    });
+
+    // Create a CSV string
+    const csvContent = csvRows.join('\n');
+
+    // Create a Blob and a URL for it
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    // Create a temporary link element
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'results.csv';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+
+    // Trigger the download
+    a.click();
+
+    // Clean up the URL and remove the link element
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+});
+
+document.getElementById('download-excel-button').addEventListener('click', function () {
+    if (allResults.length === 0) {
+        alert('No results available to download.');
+        return;
+    }
+
+    const headers = [
+        'Date', 
+        'Time', 
+        'Train Type', 
+        'Train Number', 
+        'Station', 
+        'Additional Info', 
+        'Sub-Transport Type', 
+        'Sub-Transport Departure Time', 
+        'Sub-Transport Platform', 
+        'Sub-Transport Number', 
+        'Sub-Transport Company', 
+        'Walking Time'
+    ];
+
+    const dataRows = [];
+
+    // Add the headers row
+    dataRows.push(headers);
+
+    // Add the data rows
+    allResults.forEach(item => {
+        if (item.length < 8 || !Array.isArray(item[6])) {
+            console.warn('Skipping invalid item:', item);
+            return;
+        }
+
+        // Loop through each sub-item (e.g., buses) and create a data row for each
+        item[6].forEach(subItem => {
+            const row = [
+                item[0] || '-',  // Date (can be adjusted depending on your data structure)
+                item[1] || '-',  // Time
+                item[2] || '-',  // Train Type
+                item[3] || '-',  // Train Number
+                item[4] || '-',  // Station
+                item[5] || '-',  // Additional Info
+                subItem[1] || '-',  // Sub-Transport Type (e.g., Bus, Tram)
+                subItem[0] || '-',  // Sub-Transport Departure Time
+                subItem[3] || '-',  // Sub-Transport Platform
+                subItem[5] || '-',  // Sub-Transport Number
+                subItem[4] || '-',  // Sub-Transport Company
+                subItem[6] ? `${subItem[6]}'` : '-'  // Walking Time
+            ];
+
+            dataRows.push(row);
+        });
+    });
+
+    // Create a new workbook and a worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(dataRows);
+
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Results");
+
+    // Generate and download the Excel file
+    XLSX.writeFile(wb, 'results.xlsx');
 });
