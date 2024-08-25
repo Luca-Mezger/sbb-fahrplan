@@ -46,38 +46,38 @@ class Data():
         broken connections are matched over the schedule, since the train number changed between the databases
 
         Returns:
-          List of delayed trains with broken connections
-            format: (old arrival time, new arrival time, vehicle type, service line number, train number, track name, list of broken cons.)
-          List of broken connections per train
-            format: (departure time, vehicle type, service line number, track name, agency id, train number, walk time stops, starting stop, ending stop)
+        List of delayed trains with broken connections
+            format: (old arrival time, new arrival time, vehicle type, service line number, train number, track name, list of broken cons., date)
+        List of broken connections per train
+            format: (departure time, vehicle type, service line number, track name, agency id, train number, walk time stops, starting stop, ending stop, date)
         """
 
         #change date to sbb date format (days since 10.12.2023)
         sbb_days = self.__date_to_sbb(date)
 
-# SQL query to retrieve arrival times from old and new databases
+    # SQL query to retrieve arrival times from old and new databases
 
         query = f"""
-SELECT
-group_concat(fplan_stop_times.fplan_trip_bitfeld_id) AS trip_bitfield_id,
-group_concat(fplan_stop_times.stop_arrival) AS stop_arrs,
-fplan.fplan_trip_id,
-fplan.vehicle_type,
-fplan.service_line,
-gleis.track_full_text
+    SELECT
+    group_concat(fplan_stop_times.fplan_trip_bitfeld_id) AS trip_bitfield_id,
+    group_concat(fplan_stop_times.stop_arrival) AS stop_arrs,
+    fplan.fplan_trip_id,
+    fplan.vehicle_type,
+    fplan.service_line,
+    gleis.track_full_text
 
-FROM fplan, fplan_trip_bitfeld, calendar, fplan_stop_times
-left join gleis using(gleis_id)
-WHERE fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
-AND fplan_trip_bitfeld.fplan_trip_bitfeld_id =
-fplan_stop_times.fplan_trip_bitfeld_id
-and fplan_stop_times.stop_id = "{bhfs_id}"
-AND fplan_trip_bitfeld.service_id = calendar.service_id
-AND SUBSTR(calendar.day_bits, {sbb_days}, 1) = "1" 
-AND agency_id = "{agency_id}"
-GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
-;
-"""
+    FROM fplan, fplan_trip_bitfeld, calendar, fplan_stop_times
+    left join gleis using(gleis_id)
+    WHERE fplan.row_idx = fplan_trip_bitfeld.fplan_row_idx
+    AND fplan_trip_bitfeld.fplan_trip_bitfeld_id =
+    fplan_stop_times.fplan_trip_bitfeld_id
+    and fplan_stop_times.stop_id = "{bhfs_id}"
+    AND fplan_trip_bitfeld.service_id = calendar.service_id
+    AND SUBSTR(calendar.day_bits, {sbb_days}, 1) = "1" 
+    AND agency_id = "{agency_id}"
+    GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
+    ;
+    """
 
         #run query against both dbs
         old_arr_times = self.__get_data_old(query)
@@ -144,26 +144,29 @@ GROUP BY fplan_trip_bitfeld.fplan_trip_bitfeld_id
                             out_list.append(nearest_stop[1])
                             out_list.append(start_stop)
                             out_list.append(end_stop)
+                            out_list.append(date)  # Add the date at the end of the connection list
                             connection_miss.append(out_list)
 
 
-                #break if no connection broken
-                if connection_miss == []:
-                    continue
+                    #break if no connection broken
+                    if connection_miss == []:
+                        continue
 
-                #prepare and ad an entry to the lists
-                element = (f"{old_time[:2]}:{old_time[2:]}",
-                                    f"{new_time[:2]}:{new_time[2:]}",
-                                    old_arr_dict[trip][3],
-                                    old_arr_dict[trip][4],
-                                    old_arr_dict[trip][2],
-                                    old_arr_dict[trip][5],
-                                    connection_miss)
+                    #prepare and ad an entry to the lists
+                    element = (f"{old_time[:2]}:{old_time[2:]}",
+                                        f"{new_time[:2]}:{new_time[2:]}",
+                                        old_arr_dict[trip][3],
+                                        old_arr_dict[trip][4],
+                                        old_arr_dict[trip][2],
+                                        old_arr_dict[trip][5],
+                                        connection_miss,
+                                        date)  # Add the date at the end of the main list
 
-                return_list.append(element)
+                    return_list.append(element)
 
         return return_list
 
+    
     def __fplan_shortening(self, fplan_content):
         """remove header from fplan string
         """
