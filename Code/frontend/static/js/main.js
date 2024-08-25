@@ -352,28 +352,18 @@ function getDateRange(startDate, endDate) {
     
 
     function groupResultsByDate(results) {
-        // Ensure results is an array
         if (!Array.isArray(results)) {
             console.error('Expected an array but got:', results);
             return [];
         }
     
         const grouped = results.reduce((acc, item) => {
-            // Ensure item[0] exists and is a valid time or datetime string
             if (!item[0]) {
                 console.warn('Skipping item with invalid or missing datetime:', item[0]);
                 return acc;
             }
     
-            let date, time;
-            if (item[0].includes(' ')) {
-                // Full datetime string
-                [date, time] = item[0].split(' ');
-            } else {
-                // Only time is provided, use a default date or placeholder
-                date = '0000-00-00'; // Placeholder date
-                time = item[0];
-            }
+            let [time, date] = [item[0], item[item.length - 1]]; // Assuming date is the last element in the item array
     
             if (!acc[date]) acc[date] = [];
             acc[date].push(item);
@@ -384,15 +374,16 @@ function getDateRange(startDate, endDate) {
         const flattenedResults = [];
         Object.keys(grouped).sort().forEach(date => {
             const sortedGroup = grouped[date].sort((a, b) => {
-                const timeA = parseTime(a[0].includes(' ') ? a[0].split(' ')[1] : a[0]);
-                const timeB = parseTime(b[0].includes(' ') ? b[0].split(' ')[1] : b[0]);
-                return timeA - timeB; // Compare parsed times
+                const timeA = parseTime(a[0]);
+                const timeB = parseTime(b[0]);
+                return timeA - timeB;
             });
             flattenedResults.push(...sortedGroup);
         });
     
         return flattenedResults;
     }
+    
     
     
 
