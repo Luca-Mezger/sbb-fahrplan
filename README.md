@@ -4,7 +4,7 @@ by Rebeca, Benjamin, Luca
 
 ## Architektur
 
-![image](Code/img/sbb-fahrbahn.svg)
+![image](Misc/img/sbb-fahrbahn.svg)
 Kommentar?
 
 ## Anleitung
