@@ -29,9 +29,9 @@ Folgende Tabellen werden verwendet
 
 ![image](Misc/img/TrackHackers_db-modell.svg)
 
-## Datenfluss
+## Prozessfluss
 
-TBD
+![image](Misc/img/prozessfluss.svg)
 
 ## Features
 
