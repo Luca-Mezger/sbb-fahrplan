@@ -2,7 +2,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const bahnhofSuche = document.getElementById('bahnhof-suche');
     const searchButton = document.getElementById('search-button');
     const suggestionsList = document.getElementById('suggestions');
-    const datePicker = document.getElementById('date-picker');
+    const startDatePicker = document.getElementById('start-date-picker');
+    const endDatePicker = document.getElementById('end-date-picker');
+    const dateRangeToggle = document.getElementById('date-range-toggle');
     const resultsContainer = document.getElementById('results-container');
     const searchContainer = document.getElementById('search-container');
     const advancedSettingsToggle = document.getElementById('advanced-settings-toggle');
@@ -17,15 +19,48 @@ document.addEventListener('DOMContentLoaded', function () {
     let stations = [];
     let filteredNames = [];
     let allResults = [];
-    let transportunternehmen = []; // To store fetched data
-    let selectedAgencyKuerzel = null; // Store selected agency Kürzel
+    let transportunternehmen = [];
+    let selectedAgencyKuerzel = null;
 
-    // Set date picker to today's date
+    // Set default date to today
     const today = new Date().toISOString().split('T')[0];
-    datePicker.value = today;
+    startDatePicker.value = today;
+    endDatePicker.value = today;
 
-    // Hide time selection elements initially
-    timeSelectionContainer.style.display = 'none';
+    // Toggle date range
+    dateRangeToggle.addEventListener('change', function () {
+        if (dateRangeToggle.checked) {
+            endDatePicker.style.display = 'inline-block';
+        } else {
+            endDatePicker.style.display = 'none';
+        }
+    });
+
+
+
+
+    // Toggle date range
+dateRangeToggle.addEventListener('change', function () {
+    if (dateRangeToggle.checked) {
+        endDatePicker.style.display = 'inline-block';
+    } else {
+        endDatePicker.style.display = 'none';
+    }
+});
+
+// Function to generate an array of dates between the start and end date
+function getDateRange(startDate, endDate) {
+    const dateRange = [];
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= new Date(endDate)) {
+        dateRange.push(currentDate.toISOString().split('T')[0]);
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dateRange;
+}
+
 
     // Function to display a message when no results are found
     function displayNoResults() {
@@ -267,47 +302,101 @@ document.addEventListener('DOMContentLoaded', function () {
             transportunternehmenSuggestions.style.display = 'none';
         }
     }
-    
-    // Handle search button click
     searchButton.addEventListener('click', function () {
         const selectedName = bahnhofSuche.value;
-        const selectedDate = datePicker.value;
+        const selectedStartDate = startDatePicker.value;
+        const selectedEndDate = dateRangeToggle.checked ? endDatePicker.value : selectedStartDate;
     
         const selectedStation = stations.find(station => station.name === selectedName);
     
-        if (selectedStation && selectedDate) {
+        if (selectedStation && selectedStartDate && selectedEndDate) {
             searchContainer.style.marginTop = '-15px';
             resultsContainer.style.display = 'none'; // Hide results container initially
             loadingSpinner.style.display = 'block';  // Show the spinner
     
-            const url = `/bhfs/${selectedDate}/${selectedStation.id}`;
-            fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                // Log each result to inspect its structure
-                data.forEach((result, index) => {
-                    console.log(`Result ${index}:`, result);
+            // Generate date range and fetch results for each date
+            const dateRange = getDateRange(selectedStartDate, selectedEndDate);
+            const fetchPromises = dateRange.map(date =>
+                fetch(`/bhfs/${date}/${selectedStation.id}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Error fetching data for ${date}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        return null; // Return null in case of an error to filter out later
+                    })
+            );
+    
+            Promise.all(fetchPromises)
+                .then(results => {
+                    // Filter out any null results (due to errors)
+                    allResults = results.filter(result => result !== null).flat(); // Combine results from all dates
+                    filterAndDisplayResults(); // Filter and display results
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    displayNoResults();
+                })
+                .finally(() => {
+                    loadingSpinner.style.display = 'none';  // Hide the spinner
+                    resultsContainer.style.display = 'block'; // Show results container
                 });
-        
-                // Now apply filtering
-                allResults = data;
-        
-                filterAndDisplayResults(); // Display filtered results based on time range
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                loadingSpinner.style.display = 'none';  // Hide the spinner
-                resultsContainer.style.display = 'block'; // Show results container
-            });
-        
-        
         } else {
             alert('Please select a valid station and date.');
         }
     });
+    
+    
 
+    function groupResultsByDate(results) {
+        // Ensure results is an array
+        if (!Array.isArray(results)) {
+            console.error('Expected an array but got:', results);
+            return [];
+        }
+    
+        const grouped = results.reduce((acc, item) => {
+            // Ensure item[0] exists and is a valid time or datetime string
+            if (!item[0]) {
+                console.warn('Skipping item with invalid or missing datetime:', item[0]);
+                return acc;
+            }
+    
+            let date, time;
+            if (item[0].includes(' ')) {
+                // Full datetime string
+                [date, time] = item[0].split(' ');
+            } else {
+                // Only time is provided, use a default date or placeholder
+                date = '0000-00-00'; // Placeholder date
+                time = item[0];
+            }
+    
+            if (!acc[date]) acc[date] = [];
+            acc[date].push(item);
+            return acc;
+        }, {});
+    
+        // Flatten grouped results back into a single array, sorted by date and time
+        const flattenedResults = [];
+        Object.keys(grouped).sort().forEach(date => {
+            const sortedGroup = grouped[date].sort((a, b) => {
+                const timeA = parseTime(a[0].includes(' ') ? a[0].split(' ')[1] : a[0]);
+                const timeB = parseTime(b[0].includes(' ') ? b[0].split(' ')[1] : b[0]);
+                return timeA - timeB; // Compare parsed times
+            });
+            flattenedResults.push(...sortedGroup);
+        });
+    
+        return flattenedResults;
+    }
+    
+    
+
+    
     function filterAndDisplayResults() {
         // Ensure start and end times are defined correctly before filtering
         const [startTime, endTime] = slider.noUiSlider.get(); // Retrieve time range from slider
@@ -325,7 +414,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     
         const filteredResults = allResults.filter(item => {
-            const arrivalTime = parseTime(item[0]); // Parse the arrival time of each item
+            if (!item[0]) {
+                console.warn('Skipping item with undefined time:', item);
+                return false;
+            }
+    
+            const timeString = item[0]; // Assuming item[0] contains only the time (e.g., '22:36')
+            const arrivalTime = parseTime(timeString); // Parse the time part directly
     
             let passesFilter = arrivalTime >= start && arrivalTime <= end; // Check if it falls within the time range
     
@@ -351,9 +446,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (filteredResults.length === 0) {
             displayNoResults(); // Display message if no results found
         } else {
-            displayResults(filteredResults); // Display the filtered results
+            const groupedAndSortedResults = groupResultsByDate(filteredResults); // Group and sort by date
+            displayResults(groupedAndSortedResults); // Display the grouped and sorted results
         }
     }
+    
+    
+    
 
     let agencyCache = {}; // Global cache for storing agency data
 
@@ -370,181 +469,191 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Function to display results
-    function displayResults(data) {
-        resultsContainer.innerHTML = '';
-        const table = document.createElement('table');
-        table.classList.add('results-table');
+function displayResults(data) {
+    resultsContainer.innerHTML = '';
+    const table = document.createElement('table');
+    table.classList.add('results-table');
 
-        // Check if we need to fetch the agencies
-        if (Object.keys(agencyCache).length === 0) {
-            fetchAndCacheAgencies().then(() => populateResults(data, table));
-        } else {
-            populateResults(data, table);
+    // Check if we need to fetch the agencies
+    if (Object.keys(agencyCache).length === 0) {
+        fetchAndCacheAgencies().then(() => populateResults(data, table));
+    } else {
+        populateResults(data, table);
+    }
+
+    resultsContainer.appendChild(table);
+}
+
+    
+    
+function populateResults(data, table) {
+    data.forEach(item => {
+        if (!item || item.length < 8) {
+            console.warn('Skipping invalid item:', item);
+            return;
         }
-    }
 
-    function populateResults(data, table) {
-        data.forEach(item => {
-            const row = document.createElement('tr');
-            const resultItem = document.createElement('div');
-            resultItem.classList.add('result-item');
-    
-            const trainInfo = document.createElement('div');
-            trainInfo.classList.add('train-info');
-    
-            // Create the span for the train number (fifth entry)
-            const trainNumberSpan = document.createElement('span');
-            trainNumberSpan.classList.add('train-number');
-            trainNumberSpan.textContent = item[4] || '-'; // Fifth entry for train number
-            trainNumberSpan.style.marginRight = '10px';
-    
-            const trainSvg = document.createElement('img');
-            trainSvg.src = '/static/assets/train.svg';
-            trainSvg.alt = 'Train Icon';
-            trainSvg.classList.add('train-svg-icon');
-    
-            const trainType = item[2].toLowerCase();
-            const trainNumber = item[3];
-            let trainIconUrl = trainNumber
-                ? `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg`
-                : `https://icons.app.sbb.ch/icons/${trainType}.svg`;
-    
-            const trainIcon = document.createElement('img');
-            trainIcon.src = trainIconUrl;
-            trainIcon.alt = `${item[2]} ${item[3]}`;
-            trainIcon.classList.add('train-icon');
-    
-            const trainTimesAndButton = document.createElement('div');
-            trainTimesAndButton.classList.add('train-times-button-container');
-    
-            const trainTimes = document.createElement('div');
-            trainTimes.classList.add('train-times');
-    
-            const arrivalWithout = document.createElement('div');
-            arrivalWithout.setAttribute('data-label', 'Alt:');
-            arrivalWithout.classList.add('time');
-            arrivalWithout.textContent = item[0] || '-';
-    
-            const arrivalWith = document.createElement('div');
-            arrivalWith.setAttribute('data-label', 'Neu:');
-            arrivalWith.classList.add('time');
-            arrivalWith.textContent = item[1] || '-';
-    
-            trainTimes.appendChild(arrivalWithout);
-            trainTimes.appendChild(arrivalWith);
-    
-            const detailsButton = document.createElement('button');
-            detailsButton.textContent = 'Betroffene Verbindungen';
-            detailsButton.classList.add('details-button');
-    
-            const dropdownContent = document.createElement('div');
-            dropdownContent.classList.add('dropdown-content');
-    
-            // Add hr element here
-            const separator = document.createElement('hr');
-            separator.classList.add('result-separator');
-            separator.style.marginTop = 0; // Initially hidden
-            separator.style.marginBottom = 0;
-            separator.style.display = 'none'; // Initially hidden
-    
-            item[6].forEach(subItem => {
-                const detail = document.createElement('div');
-                detail.classList.add('transport-info');
-    
-                let iconUrl;
-                if (subItem[1] === 'B') {
-                    iconUrl = 'https://icons.app.sbb.ch/icons/bus-profile-small.svg';
-                } else if (subItem[1] === 'T') {
-                    iconUrl = 'https://icons.app.sbb.ch/icons/tram-small.svg';
-                } else if (subItem[1] === 'S') {
-                    iconUrl = 'https://icons.app.sbb.ch/icons/boat-profile-small.svg';
-                }
-    
-                const transportIcon = document.createElement('img');
-                transportIcon.src = iconUrl;
-                transportIcon.alt = subItem[1];
-                transportIcon.classList.add('transport-icon');
-    
-                const agencyKuerzel = agencyCache[subItem[4]] || '-';
-    
-                const transportDetails = document.createElement('div');
-                transportDetails.style.display = 'flex';
-                transportDetails.style.alignItems = 'center';
-    
-                const kuerzelField = document.createElement('span');
-                kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
-                kuerzelField.style.marginRight = '10px';
-    
-                const abfahrtzeitField = document.createElement('span');
-                abfahrtzeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
-                abfahrtzeitField.style.marginRight = '20px';
-                abfahrtzeitField.style.marginLeft = '20px';
-    
-                const kanteField = document.createElement('span');
-                kanteField.innerHTML = `<strong>Kante:</strong><br>${subItem[3] || '-'}`;
-                kanteField.style.marginRight = '20px';
-    
-                const nrField = document.createElement('span');
-                nrField.innerHTML = `<strong>Nr.:</strong><br>${subItem[5] || '-'}`;
-    
-                // Create the new span for the walking icon and minutes for buses
-                const walkIconField = document.createElement('span');
-                if (subItem[1] === 'B') {
-                    const walkIcon = document.createElement('img');
-                    walkIcon.src = 'https://icons.app.sbb.ch/icons/walk-large-medium.svg';
-                    walkIcon.alt = 'Walk Icon';
-                    walkIcon.classList.add('walk-icon');
-                    walkIcon.style.marginLeft = '15px';
-    
-                    walkIconField.appendChild(walkIcon);
-    
-                    const lastEntry = subItem[6] ? `${subItem[6]}'` : '-';
-                    const lastEntryField = document.createElement('span');
-                    lastEntryField.innerHTML = lastEntry;
-                    lastEntryField.style.marginLeft = '0px';
-                    lastEntryField.style.position = 'relative';
-                    lastEntryField.style.top = '-0.7em'; // Move the text up by half a line height
-    
-                    walkIconField.appendChild(lastEntryField);
-                }
-    
-                transportDetails.appendChild(kuerzelField);
-                transportDetails.appendChild(transportIcon);
-                transportDetails.appendChild(abfahrtzeitField);
-                transportDetails.appendChild(kanteField);
-                transportDetails.appendChild(nrField);
-                transportDetails.appendChild(walkIconField);  // Add walk icon field after Nr.
-    
-                detail.appendChild(transportDetails);
-                dropdownContent.appendChild(detail);
-            });
-    
-            detailsButton.addEventListener('click', function () {
-                const isVisible = dropdownContent.style.display === 'block';
-                dropdownContent.style.display = isVisible ? 'none' : 'block';
-                separator.style.display = isVisible ? 'none' : 'block'; // Toggle hr visibility
-            });
-    
-            trainInfo.appendChild(trainNumberSpan);  // Add train number span
-            trainInfo.appendChild(trainSvg);
-            trainInfo.appendChild(trainIcon);
-            trainTimesAndButton.appendChild(trainTimes);
-            trainTimesAndButton.appendChild(detailsButton);
-    
-            resultItem.appendChild(trainInfo);
-            resultItem.appendChild(trainTimesAndButton);
-    
-            row.appendChild(resultItem);
-            row.appendChild(separator); // Append hr before dropdown content
-            row.appendChild(dropdownContent);
-            table.appendChild(row);
+        const row = document.createElement('tr');
+        const resultItem = document.createElement('div');
+        resultItem.classList.add('result-item');
+
+        const trainInfo = document.createElement('div');
+        trainInfo.classList.add('train-info');
+
+        const trainNumberSpan = document.createElement('span');
+        trainNumberSpan.classList.add('train-number');
+        trainNumberSpan.textContent = item[4] || '-';
+        trainNumberSpan.style.marginRight = '10px';
+
+        const trainSvg = document.createElement('img');
+        trainSvg.src = '/static/assets/train.svg';
+        trainSvg.alt = 'Train Icon';
+        trainSvg.classList.add('train-svg-icon');
+
+        const trainType = item[2].toLowerCase();
+        const trainNumber = item[3];
+        let trainIconUrl = trainNumber
+            ? `https://icons.app.sbb.ch/icons/${trainType}-${trainNumber}.svg`
+            : `https://icons.app.sbb.ch/icons/${trainType}.svg`;
+
+        const trainIcon = document.createElement('img');
+        trainIcon.src = trainIconUrl;
+        trainIcon.alt = `${item[2]} ${item[3]}`;
+        trainIcon.classList.add('train-icon');
+
+        const trainTimesAndButton = document.createElement('div');
+        trainTimesAndButton.classList.add('train-times-button-container');
+
+        const trainTimes = document.createElement('div');
+        trainTimes.classList.add('train-times');
+
+        const altTime = item[0];
+        const altDate = item[item.length - 1];
+        const altTimeText = `Alt: ${altTime} (${altDate})`;
+
+        const neuTime = item[1];
+        const neuDate = item[item.length - 1];
+        const neuTimeText = `Neu: ${neuTime || '-'} (${neuDate})`;
+
+        const altTimeDiv = document.createElement('div');
+        altTimeDiv.textContent = altTimeText;
+        altTimeDiv.style.marginBottom = '5px'; // Small margin between lines
+
+        const neuTimeDiv = document.createElement('div');
+        neuTimeDiv.textContent = neuTimeText;
+
+        trainTimes.appendChild(altTimeDiv);
+        trainTimes.appendChild(neuTimeDiv);
+
+        const detailsButton = document.createElement('button');
+        detailsButton.textContent = 'Betroffene Verbindungen';
+        detailsButton.classList.add('details-button');
+
+        const dropdownContent = document.createElement('div');
+        dropdownContent.classList.add('dropdown-content');
+
+        const separator = document.createElement('hr');
+        separator.classList.add('result-separator');
+        separator.style.marginTop = 0;
+        separator.style.marginBottom = 0;
+        separator.style.display = 'none';
+
+        item[6].forEach(subItem => {
+            const detail = document.createElement('div');
+            detail.classList.add('transport-info');
+
+            let iconUrl;
+            if (subItem[1] === 'B') {
+                iconUrl = 'https://icons.app.sbb.ch/icons/bus-profile-small.svg';
+            } else if (subItem[1] === 'T') {
+                iconUrl = 'https://icons.app.sbb.ch/icons/tram-small.svg';
+            } else if (subItem[1] === 'S') {
+                iconUrl = 'https://icons.app.sbb.ch/icons/boat-profile-small.svg';
+            }
+
+            const transportIcon = document.createElement('img');
+            transportIcon.src = iconUrl;
+            transportIcon.alt = subItem[1];
+            transportIcon.classList.add('transport-icon');
+
+            const agencyKuerzel = agencyCache[subItem[4]] || '-';
+
+            const transportDetails = document.createElement('div');
+            transportDetails.style.display = 'flex';
+            transportDetails.style.alignItems = 'center';
+
+            const kuerzelField = document.createElement('span');
+            kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
+            kuerzelField.style.marginRight = '10px';
+
+            const abfahrtzeitField = document.createElement('span');
+            abfahrtzeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
+            abfahrtzeitField.style.marginRight = '20px';
+            abfahrtzeitField.style.marginLeft = '20px';
+
+            const kanteField = document.createElement('span');
+            kanteField.innerHTML = `<strong>Kante:</strong><br>${subItem[3] || '-'}`;
+            kanteField.style.marginRight = '20px';
+
+            const nrField = document.createElement('span');
+            nrField.innerHTML = `<strong>Nr.:</strong><br>${subItem[5] || '-'}`;
+
+            const walkIconField = document.createElement('span');
+                const walkIcon = document.createElement('img');
+                walkIcon.src = 'https://icons.app.sbb.ch/icons/walk-large-medium.svg';
+                walkIcon.alt = 'Walk Icon';
+                walkIcon.classList.add('walk-icon');
+                walkIcon.style.marginLeft = '15px';
+
+                walkIconField.appendChild(walkIcon);
+
+                const lastEntry = subItem[6] ? `${subItem[6]}'` : '-';
+                const lastEntryField = document.createElement('span');
+                lastEntryField.innerHTML = lastEntry;
+                lastEntryField.style.marginLeft = '0px';
+                lastEntryField.style.position = 'relative';
+                lastEntryField.style.top = '-0.7em';
+
+                walkIconField.appendChild(lastEntryField);
+            
+
+            transportDetails.appendChild(kuerzelField);
+            transportDetails.appendChild(transportIcon);
+            transportDetails.appendChild(abfahrtzeitField);
+            transportDetails.appendChild(kanteField);
+            transportDetails.appendChild(nrField);
+            transportDetails.appendChild(walkIconField);
+
+            detail.appendChild(transportDetails);
+            dropdownContent.appendChild(detail);
         });
-    
-        resultsContainer.appendChild(table);
-    }
-    
-    
+
+        detailsButton.addEventListener('click', function () {
+            const isVisible = dropdownContent.style.display === 'block';
+            dropdownContent.style.display = isVisible ? 'none' : 'block';
+            separator.style.display = isVisible ? 'none' : 'block';
+        });
+
+        trainInfo.appendChild(trainNumberSpan);
+        trainInfo.appendChild(trainSvg);
+        trainInfo.appendChild(trainIcon);
+        trainTimesAndButton.appendChild(trainTimes);
+        trainTimesAndButton.appendChild(detailsButton);
+
+        resultItem.appendChild(trainInfo);
+        resultItem.appendChild(trainTimesAndButton);
+
+        row.appendChild(resultItem);
+        row.appendChild(separator);
+        row.appendChild(dropdownContent);
+        table.appendChild(row);
+    });
+
+    resultsContainer.appendChild(table);
+}
+
+
+   
     
     
 
