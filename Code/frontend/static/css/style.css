@@ -152,7 +152,7 @@ header .language-flag img {
 }
 
 .slider-display-container {
-    margin-top: 40px;
+    margin-top: 25px;
     text-align: center;
     font-size: 22px;
     font-weight: bold;
@@ -223,7 +223,7 @@ header .language-flag img {
 
 #transportunternehmen-suche {
     margin-left: 10px;
-    margin-top: 30px;
+    margin-top: 40px;
     width: auto;
     flex-grow: 1;
 }
@@ -511,4 +511,10 @@ header {
 
 .logo {
     height: 50px; /* Adjust the size as necessary */
+}
+
+
+#contact_footer{
+text-decoration: none;
+color: white
 }
