@@ -16,7 +16,7 @@ cd Code/backend/src
 flask run --host=0.0.0.0 --port=8000
 ```
  ### Nutzung
- 1. Als Verkehrsunternehmen gewünschter Bahnhof auswählen
+ 1. Als Transportunternehmen gewünschter Bahnhof auswählen
  2. Datumsrange auswählen
  3. Zeitrange auswählen (um z.B. nur die letzten Verbindungen am Tag zu checken)
  4. Transportunternehmen auswählen (dann werden nur die eigenen Verbindungen angezeigt)
