@@ -179,7 +179,7 @@ function getDateRange(startDate, endDate) {
         });
 
     // Fetch transportunternehmen data from the provided URL
-    fetch('http://127.0.0.1:5000/agency')
+    fetch('/agency')
         .then(response => response.json())
         .then(data => {
             transportunternehmen = data.map(item => ({
