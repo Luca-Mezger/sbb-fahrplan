@@ -127,8 +127,8 @@ class Data():
                     new_stops = self.__get_connections(bhfs_id, nearest_stop[0], new_time, nearest_stop[1], OLD=False)
 
                     #convert list to dict for better filtering and mapping
-                    old_stops_dict = {self.__fplan_shortening(stop[6]): stop for stop in old_stops}
-                    new_stops_dict = {self.__fplan_shortening(stop[6]): stop for stop in new_stops}
+                    old_stops_dict = {self.__fplan_first_last(stop[6]): stop for stop in old_stops}
+                    new_stops_dict = {self.__fplan_first_last(stop[6]): stop for stop in new_stops}
 
                     #mapp the connections and search for broken connections
                     for old_stop in old_stops_dict.keys():
