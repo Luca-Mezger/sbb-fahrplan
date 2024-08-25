@@ -577,6 +577,7 @@ function populateResults(data, table) {
             const kuerzelField = document.createElement('span');
             kuerzelField.innerHTML = `<strong>${agencyKuerzel}</strong>`;
             kuerzelField.style.marginRight = '10px';
+            kuerzelField.style.width = '70px';
 
             const abfahrtzeitField = document.createElement('span');
             abfahrtzeitField.innerHTML = `<strong>Abfahrtszeit:</strong><br>${subItem[0] || '-'}`;
@@ -687,50 +688,80 @@ document.getElementById('download-csv-button').addEventListener('click', functio
     }
 
     const headers = [
-        'Date', 
-        'Time', 
-        'Train Type', 
-        'Train Number', 
-        'Station', 
-        'Additional Info', 
-        'Sub-Transport Type', 
-        'Sub-Transport Departure Time', 
-        'Sub-Transport Platform', 
-        'Sub-Transport Number', 
-        'Sub-Transport Company', 
-        'Walking Time'
+        'Date',
+        'Time',
+        'Train Type',
+        'Train Number',
+        'Station',
+        'Additional Info',
+        'Level 1 Type',
+        'Level 1 Detail 1',
+        'Level 1 Detail 2',
+        'Level 1 Detail 3',
+        'Level 1 Detail 4',
+        'Level 1 Detail 5',
+        'Level 2 Type',
+        'Level 2 Detail 1',
+        'Level 2 Detail 2',
+        // Add more headers as needed to accommodate deeper levels
     ];
     const csvRows = [];
 
     // Add the headers row
     csvRows.push(headers.join(','));
 
-    // Add the data rows
-    allResults.forEach(item => {
-        if (item.length < 8 || !Array.isArray(item[6])) {
-            console.warn('Skipping invalid item:', item);
-            return;
+    // Recursive function to flatten nested structures
+    function flattenItem(item, levelPrefix) {
+        let flatItem = [];
+
+        // Base details from the primary level
+        flatItem.push(
+            item[0] || '-',  // Date
+            item[1] || '-',  // Time
+            item[2] || '-',  // Train Type
+            item[3] || '-',  // Train Number
+            item[4] || '-',  // Station
+            item[5] || '-'   // Additional Info
+        );
+
+        // Loop through the nested lists
+        if (Array.isArray(item[6])) {
+            item[6].forEach(subItem => {
+                let subFlat = [];
+                subFlat.push(
+                    subItem[1] || '-',  // Sub-Transport Type
+                    subItem[0] || '-',  // Sub-Transport Departure Time
+                    subItem[3] || '-',  // Sub-Transport Platform
+                    subItem[5] || '-',  // Sub-Transport Number
+                    subItem[4] || '-'   // Sub-Transport Company
+                );
+
+                // If there are deeper nested sub-items, flatten them too
+                if (Array.isArray(subItem[6])) {
+                    subItem[6].forEach(deeperSubItem => {
+                        let deeperSubFlat = [
+                            deeperSubItem[0] || '-',  // Deeper Sub-Transport Detail 1
+                            deeperSubItem[1] || '-',  // Deeper Sub-Transport Detail 2
+                            // Add more as needed...
+                        ];
+
+                        // Concatenate all levels together
+                        csvRows.push(flatItem.concat(subFlat, deeperSubFlat).join(','));
+                    });
+                } else {
+                    // No deeper levels, just push the flat result
+                    csvRows.push(flatItem.concat(subFlat).join(','));
+                }
+            });
+        } else {
+            // No nested lists, just push the flat result
+            csvRows.push(flatItem.join(','));
         }
+    }
 
-        // Loop through each sub-item (e.g., busses) and create a CSV row for each
-        item[6].forEach(subItem => {
-            const row = [
-                item[0] || '-',  // Date (can be adjusted depending on your data structure)
-                item[1] || '-',  // Time
-                item[2] || '-',  // Train Type
-                item[3] || '-',  // Train Number
-                item[4] || '-',  // Station
-                item[5] || '-',  // Additional Info
-                subItem[1] || '-',  // Sub-Transport Type (e.g., Bus, Tram)
-                subItem[0] || '-',  // Sub-Transport Departure Time
-                subItem[3] || '-',  // Sub-Transport Platform
-                subItem[5] || '-',  // Sub-Transport Number
-                subItem[4] || '-',  // Sub-Transport Company
-                subItem[6] ? `${subItem[6]}'` : '-'  // Walking Time
-            ].join(',');
-
-            csvRows.push(row);
-        });
+    // Process each result in `allResults`
+    allResults.forEach(item => {
+        flattenItem(item);
     });
 
     // Create a CSV string
@@ -755,6 +786,9 @@ document.getElementById('download-csv-button').addEventListener('click', functio
     document.body.removeChild(a);
 });
 
+
+
+
 document.getElementById('download-excel-button').addEventListener('click', function () {
     if (allResults.length === 0) {
         alert('No results available to download.');
@@ -762,18 +796,22 @@ document.getElementById('download-excel-button').addEventListener('click', funct
     }
 
     const headers = [
-        'Date', 
-        'Time', 
-        'Train Type', 
-        'Train Number', 
-        'Station', 
-        'Additional Info', 
-        'Sub-Transport Type', 
-        'Sub-Transport Departure Time', 
-        'Sub-Transport Platform', 
-        'Sub-Transport Number', 
-        'Sub-Transport Company', 
-        'Walking Time'
+        'Date',
+        'Time',
+        'Train Type',
+        'Train Number',
+        'Station',
+        'Additional Info',
+        'Level 1 Type',
+        'Level 1 Detail 1',
+        'Level 1 Detail 2',
+        'Level 1 Detail 3',
+        'Level 1 Detail 4',
+        'Level 1 Detail 5',
+        'Level 2 Type',
+        'Level 2 Detail 1',
+        'Level 2 Detail 2',
+        // Add more headers as needed to accommodate deeper levels
     ];
 
     const dataRows = [];
@@ -781,32 +819,58 @@ document.getElementById('download-excel-button').addEventListener('click', funct
     // Add the headers row
     dataRows.push(headers);
 
-    // Add the data rows
-    allResults.forEach(item => {
-        if (item.length < 8 || !Array.isArray(item[6])) {
-            console.warn('Skipping invalid item:', item);
-            return;
+    // Recursive function to flatten nested structures
+    function flattenItem(item, levelPrefix) {
+        let flatItem = [];
+
+        // Base details from the primary level
+        flatItem.push(
+            item[0] || '-',  // Date
+            item[1] || '-',  // Time
+            item[2] || '-',  // Train Type
+            item[3] || '-',  // Train Number
+            item[4] || '-',  // Station
+            item[5] || '-'   // Additional Info
+        );
+
+        // Loop through the nested lists
+        if (Array.isArray(item[6])) {
+            item[6].forEach(subItem => {
+                let subFlat = [];
+                subFlat.push(
+                    subItem[1] || '-',  // Sub-Transport Type
+                    subItem[0] || '-',  // Sub-Transport Departure Time
+                    subItem[3] || '-',  // Sub-Transport Platform
+                    subItem[5] || '-',  // Sub-Transport Number
+                    subItem[4] || '-'   // Sub-Transport Company
+                );
+
+                // If there are deeper nested sub-items, flatten them too
+                if (Array.isArray(subItem[6])) {
+                    subItem[6].forEach(deeperSubItem => {
+                        let deeperSubFlat = [
+                            deeperSubItem[0] || '-',  // Deeper Sub-Transport Detail 1
+                            deeperSubItem[1] || '-',  // Deeper Sub-Transport Detail 2
+                            // Add more as needed...
+                        ];
+
+                        // Concatenate all levels together
+                        dataRows.push(flatItem.concat(subFlat, deeperSubFlat));
+                    });
+                } else {
+                    // No deeper levels, just push the flat result
+                    dataRows.push(flatItem.concat(subFlat));
+                }
+            });
+        } else {
+            // No nested lists, just push the flat result
+            dataRows.push(flatItem);
         }
+    }
 
-        // Loop through each sub-item (e.g., buses) and create a data row for each
-        item[6].forEach(subItem => {
-            const row = [
-                item[0] || '-',  // Date (can be adjusted depending on your data structure)
-                item[1] || '-',  // Time
-                item[2] || '-',  // Train Type
-                item[3] || '-',  // Train Number
-                item[4] || '-',  // Station
-                item[5] || '-',  // Additional Info
-                subItem[1] || '-',  // Sub-Transport Type (e.g., Bus, Tram)
-                subItem[0] || '-',  // Sub-Transport Departure Time
-                subItem[3] || '-',  // Sub-Transport Platform
-                subItem[5] || '-',  // Sub-Transport Number
-                subItem[4] || '-',  // Sub-Transport Company
-                subItem[6] ? `${subItem[6]}'` : '-'  // Walking Time
-            ];
-
-            dataRows.push(row);
-        });
+    // Process each result in `allResults`
+    allResults.forEach(item => {
+        flattenItem(item);
     });
 
     // Create a new workbook and a worksheet
