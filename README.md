@@ -13,7 +13,7 @@ Für die Benutzung des Produkts wird nur Python (z.B. 3.10) mit Flask (z.B. 3.0.
 ```bash
 flask run --host=0.0.0.0 --port=8000
 ```
- ###Nutzung
+ ### Nutzung
  1. Als Verkehrsunternehmen gewünschter Bahnhof auswählen
  2. Datumsrange auswählen
  3. Zeitrange auswählen (um z.B. nur die letzten Verbindungen am Tag zu checken)
