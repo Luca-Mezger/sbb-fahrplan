@@ -21,6 +21,8 @@ flask run --host=0.0.0.0 --port=8000
  5. 2 Vergleichsdatensätzen Auswählen   
     --> Resultate generieren mit dem "Such" Button
 
+![image](Misc/img/screenshot.png)
+
 ## Datenmodell 
 Folgende Tabellen werden verwendet
 
