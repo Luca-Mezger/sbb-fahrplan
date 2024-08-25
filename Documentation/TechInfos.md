@@ -4,7 +4,7 @@
 - [Code Repository](https://github.com/Luca-Mezger/sbb-fahrplan)
 
 ## Ausgangslage
-- **Projektziel**: Entwicklung einer Webanwendung zur Suche von Busverbindungen die wegen Verspätungen des Zuges nicht effizient operieren. Viele Buslinien sind auf die eintreffenden Züge abgestimmt. Unsere Applikation hilf den Verkehrsunternehmen herauszufinden, wo es optimal wäre, eine Anschlussverbindung nach hinten zu verschieben.
+- **Projektziel**: Entwicklung einer Webanwendung zur Suche von Busverbindungen, die wegen Verspätungen des Zuges nicht effizient operieren. Viele Buslinien sind auf die eintreffenden Züge abgestimmt. Unsere Applikation hilf den Verkehrsunternehmen herauszufinden, wo es optimal wäre, eine Anschlussverbindung nach hinten zu verschieben.
 - **Ausgangslage**: sqlite Datenbanken
 
 ### Fokus
