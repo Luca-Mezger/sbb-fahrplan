@@ -1,6 +1,8 @@
 ﻿# SBB Fahrplan by TrackHackers
-SBB Fahrplan Challenge BernHäckt 2024   
+###SBB Fahrplan Challenge BernHäckt 2024   
 by Rebeca, Benjamin, Luca
+
+DEMO: https://test.wir-lernen-weiter.ch/
 
 ## Architektur
 
@@ -20,6 +22,8 @@ flask run --host=0.0.0.0 --port=8000
  4. Transportunternehmen auswählen (dann werden nur die eigenen Verbindungen angezeigt)
  5. 2 Vergleichsdatensätzen Auswählen   
     --> Resultate generieren mit dem "Such" Button
+
+![image](Misc/img/screenshot.png)
 
 ## Datenmodell 
 Folgende Tabellen werden verwendet
