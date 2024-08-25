@@ -5,7 +5,7 @@ class Data():
 
     OLD_PATH = "../data/hrdf_2024-01-03.sqlite"
 #    OLD_PATH = "../data/hrdf_2024-02-21.sqlite"
-    NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
+#    NEW_PATH = "../data/hrdf_2024-02-21.sqlite"
     NEW_PATH = "../data/hrdf_2024-08-14.sqlite"
 
 # The beginning of the new timetable. 
@@ -152,6 +152,8 @@ class Data():
                     if connection_miss == []:
                         continue
 
+                    print(connection_miss)
+
                     #prepare and ad an entry to the lists
                     element = (f"{old_time[:2]}:{old_time[2:]}",
                                         f"{new_time[:2]}:{new_time[2:]}",
@@ -166,7 +168,6 @@ class Data():
 
         return return_list
 
-    
     def __fplan_shortening(self, fplan_content):
         """remove header from fplan string
         """
@@ -175,9 +176,9 @@ class Data():
         string = ""
         for col in col_list:
             if col[0] != "*":
-                string += col
+                string += f"{col}\n"
 
-        return string
+        return string[:-1]
 
     def __fplan_first_last(self, fplan_content):
         """extract start stop and end stop from fplan
@@ -278,8 +279,12 @@ where stop_departure != "" AND {sql_time_search} AND fplan_stop_times.stop_id = 
 
         #extract from db in respect to the OL parameter
         if OLD:
-            return self.__get_data_old(query)
+ #           print("old")
+ #          print(query) 
+           return self.__get_data_old(query)
         else:
+#            print("new")
+#            print(query)
             return self.__get_data_new(query)
 
 
