@@ -6,8 +6,7 @@ DEMO: https://test.wir-lernen-weiter.ch/
 
 ## Architektur
 
-![image](Misc/img/sbb-fahrbahn.svg)
-Kommentar?
+![image](Misc/img/sbb-fahrbahn-architektur.svg)
 
 ## Anleitung
 ### Deployment
@@ -28,10 +27,7 @@ flask run --host=0.0.0.0 --port=8000
 ## Datenmodell 
 Folgende Tabellen werden verwendet
 
-- Bahnhof
-- Agentur
-- Ankünfte mit Zeitunterschied
-- TBC
+![image](Misc/img/TrackHackers_db-modell.svg)
 
 ## Datenfluss
 
@@ -39,4 +35,4 @@ TBD
 
 ## Features
 
-TBD
+
