@@ -247,44 +247,48 @@ function getDateRange(startDate, endDate) {
     }
 
     // Filter transportunternehmen based on search query
-    transportunternehmenSuche.addEventListener('input', function () {
-        function nameSorter(a, b) {
-            const queryLength = query.length;
+// Filter transportunternehmen based on search query
+transportunternehmenSuche.addEventListener('input', function () {
+    function nameSorter(a, b) {
+        const queryLength = query.length;
 
-            a = a.displayName;
-            b = b.displayName;
+        a = a.displayName;
+        b = b.displayName;
 
-            if ((a.toLowerCase().substring(0, queryLength) == query) &&
-                (b.toLowerCase().substring(0, queryLength) == query)) {
-                return a.localeCompare(b);
-            }
-            else if ((a.toLowerCase().substring(0, queryLength) == query) &&
-                     (b.toLowerCase().substring(0, queryLength) != query)) {
-                return -1;
-            }
-            else if ((a.toLowerCase().substring(0, queryLength) != query) &&
-                     (b.toLowerCase().substring(0, queryLength) == query)) {
-                return 1;
-            }
-            else if ((a.toLowerCase().substring(0, queryLength) != query) &&
-                     (b.toLowerCase().substring(0, queryLength) != query)) {
-                return a.localeCompare(b);
-            }
+        if ((a.toLowerCase().substring(0, queryLength) == query) &&
+            (b.toLowerCase().substring(0, queryLength) == query)) {
+            return a.localeCompare(b);
         }
-
-        const query = transportunternehmenSuche.value.toLowerCase();
-
-        if (query.trim() === '') {
-            transportunternehmenSuggestions.style.display = 'none';
-            return;
+        else if ((a.toLowerCase().substring(0, queryLength) == query) &&
+                 (b.toLowerCase().substring(0, queryLength) != query)) {
+            return -1;
         }
+        else if ((a.toLowerCase().substring(0, queryLength) != query) &&
+                 (b.toLowerCase().substring(0, queryLength) == query)) {
+            return 1;
+        }
+        else if ((a.toLowerCase().substring(0, queryLength) != query) &&
+                 (b.toLowerCase().substring(0, queryLength) != query)) {
+            return a.localeCompare(b);
+        }
+    }
 
-        const filteredTransportunternehmen = transportunternehmen.filter(company =>
-            company.displayName.toLowerCase().includes(query)
-        );
-        filteredTransportunternehmen.sort(nameSorter);
-        displayTransportunternehmenSuggestions(filteredTransportunternehmen);
-    });
+    const query = transportunternehmenSuche.value.toLowerCase();
+
+    if (query.trim() === '') {
+        transportunternehmenSuggestions.style.display = 'none';
+        selectedAgencyKuerzel = null;  // Reset selected agency when input is cleared
+        filterAndDisplayResults();  // Re-run the filter to show all results
+        return;
+    }
+
+    const filteredTransportunternehmen = transportunternehmen.filter(company =>
+        company.displayName.toLowerCase().includes(query)
+    );
+    filteredTransportunternehmen.sort(nameSorter);
+    displayTransportunternehmenSuggestions(filteredTransportunternehmen);
+});
+
 
     function displayTransportunternehmenSuggestions(filteredTransportunternehmen) {
         transportunternehmenSuggestions.innerHTML = '';
@@ -418,22 +422,25 @@ function getDateRange(startDate, endDate) {
             const timeString = item[0]; // Assuming item[0] contains only the time (e.g., '22:36')
             const arrivalTime = parseTime(timeString); // Parse the time part directly
     
-            let passesFilter = arrivalTime >= start && arrivalTime <= end; // Check if it falls within the time range
+            // Filter based on time range
+            let passesFilter = arrivalTime >= start && arrivalTime <= end;
     
-            // Apply agency filter if an agency is selected
-            if (selectedAgencyKuerzel) {
+            // If an agency is selected, filter based on agency
+            if (passesFilter && selectedAgencyKuerzel && selectedAgencyKuerzel.trim() !== "") {
                 const subItems = item[6]; // Assuming sub-items are in the 7th element (index 6)
                 if (Array.isArray(subItems)) {
+                    // Filter subItems based on the selected agency
                     const subItemsMatchingAgency = subItems.filter(subItem => {
                         const company = subItem[4]; // Access the company value in sub-item
                         return company && company.toLowerCase() === selectedAgencyKuerzel.toLowerCase();
                     });
-                    passesFilter = passesFilter && subItemsMatchingAgency.length > 0; // Combine filters
-                    if (passesFilter) {
+                    if (subItemsMatchingAgency.length > 0) {
                         item[6] = subItemsMatchingAgency; // Update the item with only matching sub-items
+                    } else {
+                        passesFilter = false; // If no subItems match the agency, exclude the item
                     }
                 } else {
-                    passesFilter = false; // If sub-items are not an array, don't include this item
+                    passesFilter = false; // If sub-items are not an array, exclude the item
                 }
             }
     
@@ -449,6 +456,10 @@ function getDateRange(startDate, endDate) {
             displayResults(groupedAndSortedResults); // Display the grouped and sorted results
         }
     }
+    
+    
+    
+    
     
     
     
