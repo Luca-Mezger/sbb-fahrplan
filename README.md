@@ -15,6 +15,7 @@ Für die Benutzung des Produkts wird nur Python (z.B. 3.10) mit Flask (z.B. 3.0.
 cd Code/backend/src
 flask run --host=0.0.0.0 --port=8000
 ```
+Die Datenbankfiles in Code/backend/data reinladen. Allenfalls müssen die Paths noch geändert werden.
  ### Nutzung
  1. Als Transportunternehmen gewünschter Bahnhof auswählen
  2. Datumsrange auswählen
