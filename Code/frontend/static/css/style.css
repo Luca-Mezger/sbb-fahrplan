@@ -90,9 +90,25 @@ header .language-flag img {
     border-radius: 4px;
 }
 
-.date-picker {
-    margin-left: 10px;
+
+.date-pickers-container {
+    display: block; /* Ensures the container itself is a block element */
 }
+
+.date-picker {
+    display: block; /* Forces each date picker to be a block element */
+    margin-top: 10px; /* Adds space between the two date pickers */
+    margin-left: 20px;
+}
+
+.date-picker:first-child {
+    margin-top: 0; /* Removes the top margin from the first date picker */
+}
+
+.date-selection{
+    margin-left: 20px
+}
+
 
 .suggestions-dropdown {
     list-style: none;
