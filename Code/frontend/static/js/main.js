@@ -393,6 +393,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const trainInfo = document.createElement('div');
             trainInfo.classList.add('train-info');
     
+            // Create the span for the train number (fifth entry)
+            const trainNumberSpan = document.createElement('span');
+            trainNumberSpan.classList.add('train-number');
+            trainNumberSpan.textContent = item[4] || '-'; // Fifth entry for train number
+            trainNumberSpan.style.marginRight = '10px';
+    
             const trainSvg = document.createElement('img');
             trainSvg.src = '/static/assets/train.svg';
             trainSvg.alt = 'Train Icon';
@@ -484,13 +490,13 @@ document.addEventListener('DOMContentLoaded', function () {
     
                 // Create the new span for the walking icon and minutes for buses
                 const walkIconField = document.createElement('span');
-                
+                if (subItem[1] === 'B') {
                     const walkIcon = document.createElement('img');
                     walkIcon.src = 'https://icons.app.sbb.ch/icons/walk-large-medium.svg';
                     walkIcon.alt = 'Walk Icon';
                     walkIcon.classList.add('walk-icon');
                     walkIcon.style.marginLeft = '15px';
-                    
+    
                     walkIconField.appendChild(walkIcon);
     
                     const lastEntry = subItem[6] ? `${subItem[6]}'` : '-';
@@ -501,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     lastEntryField.style.top = '-0.7em'; // Move the text up by half a line height
     
                     walkIconField.appendChild(lastEntryField);
-                
+                }
     
                 transportDetails.appendChild(kuerzelField);
                 transportDetails.appendChild(transportIcon);
@@ -520,6 +526,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 separator.style.display = isVisible ? 'none' : 'block'; // Toggle hr visibility
             });
     
+            trainInfo.appendChild(trainNumberSpan);  // Add train number span
             trainInfo.appendChild(trainSvg);
             trainInfo.appendChild(trainIcon);
             trainTimesAndButton.appendChild(trainTimes);
@@ -536,6 +543,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
         resultsContainer.appendChild(table);
     }
+    
     
     
     
