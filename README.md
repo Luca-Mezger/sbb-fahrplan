@@ -34,6 +34,8 @@ Folgende Tabellen werden verwendet
 
 ![image](Misc/img/prozessfluss.svg)
 
+Unsere Applikation bildet die Schnittstelle Bahnbetreiber (SBB) und dem Transportunternehmen. Durch Verspätungen (z.B. Baustellen) kommt es oft dazu, dass Anschlussbusse verpasst werden. Man könnte diese Busse jedoch um wenige Minuten verschieben und so die Anschlussprobleme verhindern. Diese Webapp vereinfacht das identifizeren dieser potentiellen Verschiebungsmöglichkeiten drastisch.
+
 ## Features
 - Hier sind die wichtigsten Funktionen der App:
 
