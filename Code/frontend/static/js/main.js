@@ -597,6 +597,7 @@ function populateResults(data, table) {
 
             const nrField = document.createElement('span');
             nrField.innerHTML = `<strong>Nr.:</strong><br>${subItem[5] || '-'}`;
+            nrField.style.width = '50px';
 
             const walkIconField = document.createElement('span');
                 const walkIcon = document.createElement('img');
