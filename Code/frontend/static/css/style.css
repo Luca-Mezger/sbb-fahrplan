@@ -311,7 +311,9 @@ header .language-flag img {
     white-space: nowrap; /* Prevent line breaks */
 }
 
-
+.train-number{
+    width: 50px;
+}
 
 
 .train-svg-icon {
