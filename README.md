@@ -16,6 +16,9 @@ cd Code/backend/src
 flask run --host=0.0.0.0 --port=8000
 ```
 Die Datenbankfiles (.sqlite) in Code/backend/data reinladen. Allenfalls müssen die Paths noch geändert werden.
+Beispiel Files:
+https://tools.odpch.ch/hrdf-dbs/hrdf_2024-02-21.sqlite
+https://tools.odpch.ch/hrdf-dbs/hrdf_2024-01-03.sqlite
  ### Nutzung
  1. Als Transportunternehmen gewünschter Bahnhof auswählen
  2. Datumsrange auswählen
