@@ -16,7 +16,7 @@ cd Code/backend/src
 flask run --host=0.0.0.0 --port=8000
 ```
  ### Nutzung
- 1. Als Verkehrsunternehmen gewünschter Bahnhof auswählen
+ 1. Als Transportunternehmen gewünschter Bahnhof auswählen
  2. Datumsrange auswählen
  3. Zeitrange auswählen (um z.B. nur die letzten Verbindungen am Tag zu checken)
  4. Transportunternehmen auswählen (dann werden nur die eigenen Verbindungen angezeigt)
@@ -34,22 +34,23 @@ Folgende Tabellen werden verwendet
 
 ![image](Misc/img/prozessfluss.svg)
 
+Unsere Applikation bildet die Schnittstelle Bahnbetreiber (SBB) und dem Transportunternehmen. Durch Verspätungen (z.B. Baustellen) kommt es oft dazu, dass Anschlussbusse verpasst werden. Man könnte diese Busse jedoch um wenige Minuten verschieben und so die Anschlussprobleme verhindern. Diese Webapp vereinfacht das identifizeren dieser potentiellen Verschiebungsmöglichkeiten drastisch.
+
 ## Features
-- Here are the key features of the app:
+- Hier sind die wichtigsten Funktionen der App:
 
-1. **Web Interface:**
-   - The app uses Flask to serve a web interface, rendering templates and serving static files
-2. **Station and Agency Data Retrieval:**
-   - Routes (`/bhfs` and `/agency`) provide JSON lists of train stations and agencies
-3. **Database Management:**
-   - many SQLite databases (used are two: old and new) to compare data and identify changes over time
-4. **Date-Specific Queries:**
-   - Routes (`/bhfs/<date>/<id>`) allow querying time differences and identifying delays for specific train stations on specific dates
-5. **CSV and Excel Download:**
-   - Results as CSV or Excel files
-6. **Advanced Search:**
-   - Advanced search options, including date range, time range, and filtering by transport company
-7. **Dynamic UI Elements:**
-   - Interactive elements such as sliders, dropdowns, and real-time suggestions
-
+1. **Web-Schnittstelle:**
+   - Die Anwendung verwendet Flask, um eine Webschnittstelle bereitzustellen, Vorlagen zu rendern und statische Dateien bereitzustellen
+2. **Abfrage von Stations- und Agenturdaten:**
+   - Routen (`/bhfs` und `/agency`) liefern JSON-Listen von Bahnhöfen und Agenturen
+3. **Datenbankverwaltung:**
+   - viele SQLite-Datenbanken (verwendet werden zwei: alt und neu), um Daten zu vergleichen und Änderungen im Laufe der Zeit zu erkennen
+4. **Datumsabhängige Abfragen:**
+   - Strecken (`/bhfs/<Datum>/<Id>`) ermöglichen die Abfrage von Zeitunterschieden und die Ermittlung von Verspätungen für bestimmte Bahnhöfe zu bestimmten Daten
+5. **CSV- und Excel-Download:**
+   - Ergebnisse als CSV- oder Excel-Dateien
+6. **Erweiterte Suche:**
+   - Erweiterte Suchoptionen, einschließlich Datumsbereich, Zeitbereich und Filterung nach Transportunternehmen
+7. **Dynamische UI-Elemente:**
+   - Interaktive Elemente wie Schieberegler, Dropdowns und Echtzeitvorschläge
 
