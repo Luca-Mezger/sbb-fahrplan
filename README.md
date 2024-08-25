@@ -1,5 +1,5 @@
 ﻿# SBB Fahrplan by TrackHackers
-###SBB Fahrplan Challenge BernHäckt 2024   
+### SBB Fahrplan Challenge BernHäckt 2024   
 by Rebeca, Benjamin, Luca
 
 DEMO: https://test.wir-lernen-weiter.ch/
@@ -30,9 +30,9 @@ Folgende Tabellen werden verwendet
 
 ![image](Misc/img/TrackHackers_db-modell.svg)
 
-## Datenfluss
+## Prozessfluss
 
-TBD
+![image](Misc/img/prozessfluss.svg)
 
 ## Features
 
