@@ -35,5 +35,21 @@ Folgende Tabellen werden verwendet
 ![image](Misc/img/prozessfluss.svg)
 
 ## Features
+- Here are the key features of the app:
+
+1. **Web Interface:**
+   - The app uses Flask to serve a web interface, rendering templates and serving static files
+2. **Station and Agency Data Retrieval:**
+   - Routes (`/bhfs` and `/agency`) provide JSON lists of train stations and agencies
+3. **Database Management:**
+   - many SQLite databases (used are two: old and new) to compare data and identify changes over time
+4. **Date-Specific Queries:**
+   - Routes (`/bhfs/<date>/<id>`) allow querying time differences and identifying delays for specific train stations on specific dates
+5. **CSV and Excel Download:**
+   - Results as CSV or Excel files
+6. **Advanced Search:**
+   - Advanced search options, including date range, time range, and filtering by transport company
+7. **Dynamic UI Elements:**
+   - Interactive elements such as sliders, dropdowns, and real-time suggestions
 
 
