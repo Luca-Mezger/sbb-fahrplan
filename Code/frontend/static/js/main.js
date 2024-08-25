@@ -424,11 +424,14 @@ function getDateRange(startDate, endDate) {
             if (selectedAgencyKuerzel) {
                 const subItems = item[6]; // Assuming sub-items are in the 7th element (index 6)
                 if (Array.isArray(subItems)) {
-                    const subItemsMatchingAgency = subItems.some(subItem => {
+                    const subItemsMatchingAgency = subItems.filter(subItem => {
                         const company = subItem[4]; // Access the company value in sub-item
                         return company && company.toLowerCase() === selectedAgencyKuerzel.toLowerCase();
                     });
-                    passesFilter = passesFilter && subItemsMatchingAgency; // Combine filters
+                    passesFilter = passesFilter && subItemsMatchingAgency.length > 0; // Combine filters
+                    if (passesFilter) {
+                        item[6] = subItemsMatchingAgency; // Update the item with only matching sub-items
+                    }
                 } else {
                     passesFilter = false; // If sub-items are not an array, don't include this item
                 }
@@ -446,6 +449,7 @@ function getDateRange(startDate, endDate) {
             displayResults(groupedAndSortedResults); // Display the grouped and sorted results
         }
     }
+    
     
     
     
