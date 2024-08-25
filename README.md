@@ -1,5 +1,5 @@
 ﻿# SBB Fahrplan by TrackHackers
-###SBB Fahrplan Challenge BernHäckt 2024   
+### SBB Fahrplan Challenge BernHäckt 2024   
 by Rebeca, Benjamin, Luca
 
 DEMO: https://test.wir-lernen-weiter.ch/
@@ -12,6 +12,7 @@ DEMO: https://test.wir-lernen-weiter.ch/
 ### Deployment
 Für die Benutzung des Produkts wird nur Python (z.B. 3.10) mit Flask (z.B. 3.0.0) verwendet.
 ```bash
+cd Code/backend/src
 flask run --host=0.0.0.0 --port=8000
 ```
  ### Nutzung
@@ -29,9 +30,9 @@ Folgende Tabellen werden verwendet
 
 ![image](Misc/img/TrackHackers_db-modell.svg)
 
-## Datenfluss
+## Prozessfluss
 
-TBD
+![image](Misc/img/prozessfluss.svg)
 
 ## Features
 
